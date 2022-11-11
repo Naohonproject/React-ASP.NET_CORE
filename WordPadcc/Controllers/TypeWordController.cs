@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using WordPadcc.Models;
 using Newtonsoft.Json;
 using System.Linq;
+using System.Net;
 
 namespace WordPadcc.Controllers
 {
@@ -20,7 +21,6 @@ namespace WordPadcc.Controllers
             _wordPadDbContext = wordPadDbContext;
         }
 
-        // GET: TypeWordController
         [HttpPost]
         public async Task<IActionResult> PostWord()
         {
@@ -42,10 +42,10 @@ namespace WordPadcc.Controllers
         public IActionResult GetWord(string id)
         {
             var wordPads = _wordPadDbContext.WordPads;
-            var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
+            var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
             if (wordPad == null)
             {
-                return Json(new { status = "no found" });
+                return Json(new { status = false, message = "not found" });
             }
             else
             {
@@ -56,6 +56,7 @@ namespace WordPadcc.Controllers
         [HttpPut("url/{id}")]
         public async Task<IActionResult> UpdateUrl(string id)
         {
+            var wordPads = _wordPadDbContext.WordPads;
             string content;
             using (StreamReader stream = new StreamReader(Request.Body))
             {
@@ -63,12 +64,38 @@ namespace WordPadcc.Controllers
             }
             var data = JsonConvert.DeserializeObject<WordPad>(content);
 
-            var wordPads = _wordPadDbContext.WordPads;
-            var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
+            if (data.Url == "")
+            {
+                return Json(
+                    new
+                    {
+                        status = false,
+                        errorMessage = "An error occurred, please try again later."
+                    }
+                );
+            }
+
+            var wordPad2 = (
+                from wb in wordPads
+                where wb.Url == data.Url
+                select wb
+            ).FirstOrDefault();
+
+            if (wordPad2 != null)
+            {
+                return Json(
+                    new
+                    {
+                        status = false,
+                        errorMessage = "That one is already in use, please try a different one."
+                    }
+                );
+            }
+            var wordPad = (from wb in wordPads where wb.Id == id select wb).FirstOrDefault();
 
             wordPad.Url = data.Url;
             _wordPadDbContext.SaveChanges();
-            return Json(data);
+            return Json(new { status = true, Id = wordPad.Id });
         }
 
         [HttpPut("password/{id}")]

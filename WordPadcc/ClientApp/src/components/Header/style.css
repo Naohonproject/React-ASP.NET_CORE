@@ -1,0 +1,29 @@
+.main-link {
+  text-align: center;
+  font-size: 1.5em;
+  padding: 5px;
+  background-color: #fafafa;
+  margin-bottom: 20px;
+}
+.main-link a {
+  text-decoration: none;
+}
+
+.main-link a:hover {
+  text-decoration: underline;
+}
+
+.option a {
+  margin-left: 10px;
+  margin-right: 10px;
+  text-decoration: none;
+}
+
+.option a:hover {
+  text-decoration: underline;
+}
+
+.bg-gray {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
