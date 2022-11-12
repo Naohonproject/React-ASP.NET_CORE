@@ -18,5 +18,8 @@ namespace WordPadcc.Models
         [Required]
         [StringLength(100)]
         public string Url { get; set; }
+
+        [Required]
+        public bool IsModified { get; set; }
     }
 }

@@ -1,29 +1,26 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
 
+import axios from "axios";
+
 import "./style.css";
 import { ModalContext } from "../../contexts/ModalContext";
+import { UPDATE_CONTENT } from "../../reducers/constant";
 
 const index = () => {
   const {
-    content: { Content },
+    content: { Content, Id, IsModified },
+    content,
+    dispatch,
   } = useContext(ModalContext);
 
-  // const [value, setValue] = useState(Content);
-  // const [value, setValue] = useState("");
+  const [value, setValue] = useState(Content);
 
-  // const handleOnChange = (e) => {
-  //   setValue(e.target.value);
-  // };
+  useEffect(() => {
+    setValue(Content);
+  }, [Content]);
 
-  // useEffect(() => {
-  //   const timeOutId = setTimeout(() => {
-  //     console.log(value);
-  //   }, 1000);
-  //   return clearTimeout(timeOutId);
-  // }, [value]);
-
-  const [value, setValue] = useState("");
+  console.log(content);
 
   const handleOnChange = (event) => {
     setValue(event.target.value);
@@ -33,10 +30,51 @@ const index = () => {
   // useEffect callback is called => clean up function call with value of previous state =>statements inside useEffect is called
   useEffect(() => {
     // statements will run after component render and dependency change
-    const timeoutId = setTimeout(
-      () => console.log(`I can see you're not typing. I can use "${value}" now!`),
-      1000
-    );
+    // if text area empty in the first time mounted, decide post or
+    const timeoutId = setTimeout(() => {
+      // just create a new post request if Content is empty and Id is not empty
+      if (Content == "") {
+        if (Id != "") {
+          if (!IsModified) {
+            axios
+              .post(`/api`, { ...content, Content: value })
+              .then((res) => {
+                dispatch({ type: UPDATE_CONTENT, payload: { Content: res.data.content } });
+                console.log(res);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          } else {
+            axios
+              .put(`/api/content/${Id}`, { ...content, Content: value })
+              .then((res) => {
+                console.log(res);
+                dispatch({
+                  type: UPDATE_CONTENT,
+                  payload: { Content: res.data.content, IsModified: res.data.isModified },
+                });
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          }
+        }
+      } else {
+        axios
+          .put(`/api/content/${Id}`, { ...content, Content: value })
+          .then((res) => {
+            console.log(res);
+            dispatch({
+              type: UPDATE_CONTENT,
+              payload: { Content: res.data.content, IsModified: res.data.isModified },
+            });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    }, 1000);
     // clean up function of previous state run, means timeOutId is the previous timeoutId
     return () => clearTimeout(timeoutId);
   }, [value]);

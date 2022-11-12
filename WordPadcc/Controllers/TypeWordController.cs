@@ -35,7 +35,7 @@ namespace WordPadcc.Controllers
             var wordPads = _wordPadDbContext.WordPads;
             wordPads.Add(data);
             _wordPadDbContext.SaveChanges();
-            return Json(new { status = "write succuss" });
+            return Json(data);
         }
 
         [HttpGet("{id}")]
@@ -98,6 +98,32 @@ namespace WordPadcc.Controllers
             return Json(new { status = true, Id = wordPad.Id });
         }
 
+        [HttpPut("content/{id}")]
+        public async Task<IActionResult> UpdateContent(string id)
+        {
+            var wordPads = _wordPadDbContext.WordPads;
+            string content;
+            using (StreamReader stream = new StreamReader(Request.Body))
+            {
+                content = await stream.ReadToEndAsync();
+            }
+            var data = JsonConvert.DeserializeObject<WordPad>(content);
+
+            var wordPad = (from wb in wordPads where wb.Id == id select wb).FirstOrDefault();
+
+            if (wordPad != null)
+            {
+                wordPad.Content = data.Content;
+                wordPad.IsModified = true;
+                _wordPadDbContext.SaveChanges();
+                return Json(wordPad);
+            }
+            else
+            {
+                return Json(new { message = "Not Found" });
+            }
+        }
+
         [HttpPut("password/{id}")]
         public async Task<IActionResult> UpdatePassword(string id)
         {
@@ -113,7 +139,7 @@ namespace WordPadcc.Controllers
 
             wordPad.Password = data.Password;
             _wordPadDbContext.SaveChanges();
-            return Json(data);
+            return Json(wordPad);
         }
     }
 }

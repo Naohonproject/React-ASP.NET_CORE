@@ -11,8 +11,7 @@ export default ({ children }) => {
     Password: "",
     Url: "",
     Id: "",
-    // Url: window.location.pathname !== "/" ? window.location.pathname.removeCharAt(1) : "",
-    // Id: window.location.pathname !== "/" ? window.location.pathname.removeCharAt(1) : "",
+    IsModified: false,
   });
   const [errorMessage, setErrorMessage] = useState("");
   const modalContextData = {
