@@ -4,9 +4,15 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import axios from "axios";
+import { TfiSave } from "react-icons/tfi";
 
 import { ModalContext } from "../../contexts/ModalContext";
-import { CHANGE_URL } from "../../reducers/constant";
+import {
+  CHANGE_URL,
+  CHANGE_URL_SUCCESS,
+  CHANGE_URL_FAIL,
+  IS_LOADING,
+} from "../../reducers/constant";
 
 String.prototype.removeCharAt = function (i) {
   var tmp = this.split("");
@@ -15,12 +21,14 @@ String.prototype.removeCharAt = function (i) {
 };
 
 export default function CustomModal({ heading, name }) {
-  const { modalShow, setModalShow, dispatch, content, setErrorMessage, errorMessage } =
-    useContext(ModalContext);
-  const handleClose = () => {
-    setModalShow(null);
-    setPath(window.location.pathname);
-  };
+  const {
+    modalShow,
+    setModalShow,
+    dispatch,
+    content,
+    message: { errorMessage, isLoading },
+    dispatchMessage,
+  } = useContext(ModalContext);
 
   const [path, setPath] = useState(window.location.pathname);
 
@@ -30,13 +38,19 @@ export default function CustomModal({ heading, name }) {
 
   const navigate = useNavigate();
 
+  const handleClose = () => {
+    setModalShow(null);
+    setPath(window.location.pathname);
+  };
   const handleOnUrlChange = (e) => {
     setPath("/" + e.target.value);
+    dispatchMessage({ type: CHANGE_URL_SUCCESS });
   };
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
     try {
+      dispatchMessage({ type: IS_LOADING });
       const response = await axios.put(`/api/url/${content.Id}`, {
         ...content,
         Url: path.removeCharAt(1),
@@ -44,14 +58,20 @@ export default function CustomModal({ heading, name }) {
       if (response.data.status) {
         dispatch({
           type: CHANGE_URL,
-          payload: { Url: path.removeCharAt(1), Id: response.data.id },
+          payload: { Url: response.data.url, Id: response.data.id },
         });
-        navigate(path);
+        dispatchMessage({ type: CHANGE_URL_SUCCESS });
+        navigate("/" + response.data.url);
+        setModalShow(null);
       } else {
-        setErrorMessage(response.data.errorMessage);
+        setTimeout(() => {
+          dispatchMessage({
+            type: CHANGE_URL_FAIL,
+            payload: { errorMessage: response.data.errorMessage, isLoading: false },
+          });
+        }, 1000);
       }
     } catch (error) {}
-    setModalShow(null);
   };
   return (
     <>
@@ -76,6 +96,11 @@ export default function CustomModal({ heading, name }) {
                   type="text"
                   placeholder="Url"
                 />
+                {errorMessage ? (
+                  <p style={{ color: "red", fontSize: "16px", marginTop: "6px" }}>{errorMessage}</p>
+                ) : (
+                  ""
+                )}
               </Form.Group>
             ) : (
               ""
@@ -97,6 +122,7 @@ export default function CustomModal({ heading, name }) {
             )}
           </Modal.Body>
           <Modal.Footer>
+            {isLoading && <TfiSave style={{ marginRight: "auto" }} />}
             <Button variant="secondary" onClick={handleClose}>
               Close
             </Button>

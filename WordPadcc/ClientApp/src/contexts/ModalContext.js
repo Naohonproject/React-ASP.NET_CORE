@@ -1,6 +1,7 @@
 import { createContext, useReducer, useState } from "react";
 
 import contentReducer from "../reducers/contentReducer";
+import messageReducer from "../reducers/messageReducer";
 
 export const ModalContext = createContext();
 
@@ -13,14 +14,18 @@ export default ({ children }) => {
     Id: "",
     IsModified: false,
   });
+  const [message, dispatchMessage] = useReducer(messageReducer, {
+    errorMessage: "",
+    isLoading: false,
+  });
   const [errorMessage, setErrorMessage] = useState("");
   const modalContextData = {
     modalShow,
     setModalShow,
     content,
     dispatch,
-    setErrorMessage,
-    errorMessage,
+    message,
+    dispatchMessage,
   };
   return <ModalContext.Provider value={modalContextData}>{children}</ModalContext.Provider>;
 };

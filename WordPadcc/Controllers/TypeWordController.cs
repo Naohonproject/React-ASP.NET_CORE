@@ -64,38 +64,59 @@ namespace WordPadcc.Controllers
             }
             var data = JsonConvert.DeserializeObject<WordPad>(content);
 
-            if (data.Url == "")
-            {
-                return Json(
-                    new
-                    {
-                        status = false,
-                        errorMessage = "An error occurred, please try again later."
-                    }
-                );
-            }
-
-            var wordPad2 = (
-                from wb in wordPads
-                where wb.Url == data.Url
-                select wb
-            ).FirstOrDefault();
-
-            if (wordPad2 != null)
-            {
-                return Json(
-                    new
-                    {
-                        status = false,
-                        errorMessage = "That one is already in use, please try a different one."
-                    }
-                );
-            }
+            // find wordPad data by Id
             var wordPad = (from wb in wordPads where wb.Id == id select wb).FirstOrDefault();
+            // wordPad != null, mean this wordPad was saved before,return new one after change the database
+            if (wordPad == null)
+            {
+                if (data.Url == "")
+                {
+                    return Json(
+                        new
+                        {
+                            status = false,
+                            errorMessage = "An error occurred, please try again later."
+                        }
+                    );
+                }
+                return Json(new { status = true, Id = data.Id, Url = data.Url });
+            }
+            // mean, just when use travel to website, did not create any thing, wordPad did create in data base, just response what they send
+            else
+            {
+                // new Url is empty, response error message
+                if (data.Url == "")
+                {
+                    return Json(
+                        new
+                        {
+                            status = false,
+                            errorMessage = "An error occurred, please try again later."
+                        }
+                    );
+                }
 
-            wordPad.Url = data.Url;
-            _wordPadDbContext.SaveChanges();
-            return Json(new { status = true, Id = wordPad.Id });
+                // find wordPad by Url to check whether the sent url is exist or not in database
+                var wordPad2 = (
+                    from wb in wordPads
+                    where wb.Url == data.Url
+                    select wb
+                ).FirstOrDefault();
+                // if Existed, Response ErrorMessage
+                if (wordPad2 != null)
+                {
+                    return Json(
+                        new
+                        {
+                            status = false,
+                            errorMessage = "That one is already in use, please try a different one."
+                        }
+                    );
+                }
+                wordPad.Url = data.Url;
+                _wordPadDbContext.SaveChanges();
+                return Json(new { status = true, Id = wordPad.Id, Url = wordPad.Url });
+            }
         }
 
         [HttpPut("content/{id}")]

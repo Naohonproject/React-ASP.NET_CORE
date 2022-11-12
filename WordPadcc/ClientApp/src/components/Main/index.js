@@ -20,8 +20,6 @@ const index = () => {
     setValue(Content);
   }, [Content]);
 
-  console.log(content);
-
   const handleOnChange = (event) => {
     setValue(event.target.value);
   };
@@ -32,7 +30,8 @@ const index = () => {
     // statements will run after component render and dependency change
     // if text area empty in the first time mounted, decide post or
     const timeoutId = setTimeout(() => {
-      // just create a new post request if Content is empty and Id is not empty
+      // just create a new post request if Content is empty and Id is not empty and except
+
       if (Content == "") {
         if (Id != "") {
           if (!IsModified) {
@@ -40,24 +39,18 @@ const index = () => {
               .post(`/api`, { ...content, Content: value })
               .then((res) => {
                 dispatch({ type: UPDATE_CONTENT, payload: { Content: res.data.content } });
-                console.log(res);
               })
-              .catch((err) => {
-                console.log(err);
-              });
+              .catch((err) => {});
           } else {
             axios
               .put(`/api/content/${Id}`, { ...content, Content: value })
               .then((res) => {
-                console.log(res);
                 dispatch({
                   type: UPDATE_CONTENT,
                   payload: { Content: res.data.content, IsModified: res.data.isModified },
                 });
               })
-              .catch((err) => {
-                console.log(err);
-              });
+              .catch((err) => {});
           }
         }
       } else {
@@ -74,7 +67,7 @@ const index = () => {
             console.log(err);
           });
       }
-    }, 1000);
+    }, 500);
     // clean up function of previous state run, means timeOutId is the previous timeoutId
     return () => clearTimeout(timeoutId);
   }, [value]);

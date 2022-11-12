@@ -8,7 +8,6 @@ export default (state, action) => {
     case CHANGE_URL:
       return { ...state, ...payload };
     case UPDATE_CONTENT:
-      console.log("test");
       return { ...state, ...payload };
     default:
       return state;

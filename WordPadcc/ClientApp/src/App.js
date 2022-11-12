@@ -21,8 +21,6 @@ function App() {
     content: { Id, Url, Content, Password },
   } = useContext(ModalContext);
 
-  console.log(Id, Url, Content, Password);
-
   // when App mount, useEffect will be called, 2 cases will be available:
   // * case 1 : user travel to our web with origin(ex:https://localhost:5001) => location.pathname will be equal to "/"
   //            then we create an id, change location.path by using useNavigate hook, then we dispatch the Id,Url to
