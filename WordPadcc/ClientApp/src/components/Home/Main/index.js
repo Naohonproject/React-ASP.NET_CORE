@@ -4,8 +4,8 @@ import { useContext, useState, useEffect } from "react";
 import axios from "axios";
 
 import "./style.css";
-import { ModalContext } from "../../contexts/ModalContext";
-import { UPDATE_CONTENT } from "../../reducers/constant";
+import { ModalContext } from "../../../contexts/ModalContext";
+import { UPDATE_CONTENT } from "../../../reducers/constant";
 
 const index = () => {
   const {
@@ -31,7 +31,6 @@ const index = () => {
     // if text area empty in the first time mounted, decide post or
     const timeoutId = setTimeout(() => {
       // just create a new post request if Content is empty and Id is not empty and except
-
       if (Content == "") {
         if (Id != "") {
           if (!IsModified) {
@@ -57,7 +56,6 @@ const index = () => {
         axios
           .put(`/api/content/${Id}`, { ...content, Content: value })
           .then((res) => {
-            console.log(res);
             dispatch({
               type: UPDATE_CONTENT,
               payload: { Content: res.data.content, IsModified: res.data.isModified },

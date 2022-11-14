@@ -1,8 +1,4 @@
-import ModalContextProvider from "./contexts/ModalContext";
-import "./App.css";
-import Header from "./components/Header";
-import Main from "./components/Main";
-import CustomModal from "./components/Modals/Modal";
+import { Route, Routes } from "react-router-dom";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useContext, memo } from "react";
 import { customAlphabet } from "nanoid";
@@ -10,6 +6,9 @@ import axios from "axios";
 
 import { ModalContext } from "./contexts/ModalContext";
 import { INIT } from "./reducers/constant";
+import "./App.css";
+import Home from "./components/Home/Home";
+import Share from "./components/Share";
 
 const nanoid = customAlphabet("1234567890abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
@@ -42,31 +41,29 @@ function App() {
     }
     // for the time when user take the Url with Origin + pathname(ex: https://localhost:5001/jsdfdmnsklfm)
     else {
-      axios
-        .get(`/api${location.pathname}`)
-        .then((res) => {
-          if (res.data.content) {
-            const { id, password, content, url } = res.data;
-            dispatch({
-              type: INIT,
-              payload: { Id: id, Password: password, Content: content, Url: url },
-            });
-          } else {
-            const path = location.pathname.removeCharAt(1);
-            dispatch({ type: INIT, payload: { Id: path, Url: path } });
-          }
-        })
-        .catch((err) => console.log(err));
+      if (location.pathname.length <= 9) {
+        axios
+          .get(`/api${location.pathname}`)
+          .then((res) => {
+            if (res.data.content) {
+              const { id, password, content, url } = res.data;
+              dispatch({
+                type: INIT,
+                payload: { Id: id, Password: password, Content: content, Url: url },
+              });
+            }
+          })
+          .catch((err) => console.log(err));
+      }
     }
   }, [Id, Url]);
 
   return (
     <div className="App">
-      <Header />
-      <CustomModal name="url" heading="Change Url" />
-      <CustomModal name="password" heading="Set Password" />
-      <CustomModal name="share" heading="Share" />
-      <Main />
+      <Routes>
+        <Route path="/share/:id" element={<Share />} />
+        <Route path="/*" element={<Home />} />
+      </Routes>
     </div>
   );
 }

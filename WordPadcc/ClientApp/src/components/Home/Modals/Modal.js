@@ -6,13 +6,15 @@ import Form from "react-bootstrap/Form";
 import axios from "axios";
 import { TfiSave } from "react-icons/tfi";
 
-import { ModalContext } from "../../contexts/ModalContext";
+import { ModalContext } from "../../../contexts/ModalContext";
 import {
   CHANGE_URL,
   CHANGE_URL_SUCCESS,
   CHANGE_URL_FAIL,
   IS_LOADING,
-} from "../../reducers/constant";
+  RESET,
+} from "../../../reducers/constant";
+import "./Modal.css";
 
 String.prototype.removeCharAt = function (i) {
   var tmp = this.split("");
@@ -40,6 +42,7 @@ export default function CustomModal({ heading, name }) {
 
   const handleClose = () => {
     setModalShow(null);
+    dispatchMessage({ type: RESET });
     setPath(window.location.pathname);
   };
   const handleOnUrlChange = (e) => {
@@ -115,7 +118,12 @@ export default function CustomModal({ heading, name }) {
 
             {name === "share" ? (
               <Form.Group className="mb-3">
-                <Form.Control type="text" placeholder="share" />
+                <Form.Control
+                  readOnly
+                  value={window.location.origin + "/" + "share" + window.location.pathname}
+                  type="text"
+                  placeholder="share"
+                />
               </Form.Group>
             ) : (
               ""
@@ -123,11 +131,15 @@ export default function CustomModal({ heading, name }) {
           </Modal.Body>
           <Modal.Footer>
             {isLoading && <TfiSave style={{ marginRight: "auto" }} />}
-            <Button variant="secondary" onClick={handleClose}>
+            <Button
+              className={isLoading ? "disable" : ""}
+              variant="secondary"
+              onClick={handleClose}
+            >
               Close
             </Button>
             {name !== "share" ? (
-              <Button type="submit" variant="primary">
+              <Button className={isLoading ? "disable" : ""} type="submit" variant="primary">
                 Save Changes
               </Button>
             ) : (

@@ -4,7 +4,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 
 import "./style.css";
-import { ModalContext } from "../../contexts/ModalContext";
+import { ModalContext } from "../../../contexts/ModalContext";
 
 const Index = () => {
   const { setModalShow } = useContext(ModalContext);

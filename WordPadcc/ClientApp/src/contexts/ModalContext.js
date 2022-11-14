@@ -18,7 +18,7 @@ export default ({ children }) => {
     errorMessage: "",
     isLoading: false,
   });
-  const [errorMessage, setErrorMessage] = useState("");
+
   const modalContextData = {
     modalShow,
     setModalShow,

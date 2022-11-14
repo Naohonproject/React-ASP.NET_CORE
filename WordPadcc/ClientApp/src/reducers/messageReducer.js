@@ -1,4 +1,4 @@
-import { CHANGE_URL_FAIL, CHANGE_URL_SUCCESS, IS_LOADING } from "./constant";
+import { CHANGE_URL_FAIL, CHANGE_URL_SUCCESS, IS_LOADING, RESET } from "./constant";
 
 export default (state, action) => {
   const { type, payload } = action;
@@ -9,6 +9,8 @@ export default (state, action) => {
       return { ...state, isLoading: false, errorMessage: "" };
     case CHANGE_URL_FAIL:
       return { ...state, ...payload };
+    case RESET:
+      return { ...state, isLoading: false, errorMessage: "" };
     default:
       return state;
   }

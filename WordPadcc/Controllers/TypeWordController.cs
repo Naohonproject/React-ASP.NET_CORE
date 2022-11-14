@@ -11,7 +11,7 @@ using System.Net;
 namespace WordPadcc.Controllers
 {
     [ApiController]
-    [Route("/api")]
+    [Route("api")]
     public class TypeWordController : Controller
     {
         private readonly WordPadDbContext _wordPadDbContext;
