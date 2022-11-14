@@ -41,6 +41,10 @@ namespace WordPadcc.Controllers
         [HttpGet("{id}")]
         public IActionResult GetWord(string id)
         {
+            if (HttpContext.Session.GetString("isAuth") == "no")
+            {
+                return Content("No Auth");
+            }
             var wordPads = _wordPadDbContext.WordPads;
             var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
             if (wordPad == null)
@@ -122,6 +126,10 @@ namespace WordPadcc.Controllers
         [HttpPut("content/{id}")]
         public async Task<IActionResult> UpdateContent(string id)
         {
+            if (HttpContext.Session.GetString("isAuth") == "no")
+            {
+                return Content("No Auth");
+            }
             var wordPads = _wordPadDbContext.WordPads;
             string content;
             using (StreamReader stream = new StreamReader(Request.Body))
@@ -160,6 +168,7 @@ namespace WordPadcc.Controllers
 
             wordPad.Password = data.Password;
             _wordPadDbContext.SaveChanges();
+            HttpContext.Session.SetString("isAuth", "no");
             return Json(wordPad);
         }
     }
