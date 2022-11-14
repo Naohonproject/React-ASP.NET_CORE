@@ -9,7 +9,6 @@ namespace WordPadcc.Models
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // optionsBuilder.UseNpgsql("Host=localhost;Database=WordPadCC;Username=postgres;Password=1996");
             base.OnConfiguring(optionsBuilder);
         }
 

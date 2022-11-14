@@ -21,6 +21,7 @@ namespace WordPadcc.Controllers
             _wordPadDbContext = wordPadDbContext;
         }
 
+        // access : public
         [HttpPost]
         public async Task<IActionResult> PostWord()
         {
@@ -38,18 +39,35 @@ namespace WordPadcc.Controllers
             return Json(data);
         }
 
+        // access: private
         [HttpGet("{id}")]
         public IActionResult GetWord(string id)
         {
-            if (HttpContext.Session.GetString("isAuth") == "no")
-            {
-                return Content("No Auth");
-            }
             var wordPads = _wordPadDbContext.WordPads;
             var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
+
             if (wordPad == null)
             {
                 return Json(new { status = false, message = "not found" });
+            }
+            else if (wordPad.Password != "")
+            {
+                if (HttpContext.Session.GetString("isAuth") == "yes")
+                {
+                    return Json(
+                        new
+                        {
+                            Id = wordPad.Id,
+                            Url = wordPad.Url,
+                            Content = wordPad.Content,
+                            IsModified = wordPad.IsModified
+                        }
+                    );
+                }
+                else
+                {
+                    return Json(new { status = false, message = "not authenticate" });
+                }
             }
             else
             {
@@ -57,6 +75,7 @@ namespace WordPadcc.Controllers
             }
         }
 
+        // access : private
         [HttpPut("url/{id}")]
         public async Task<IActionResult> UpdateUrl(string id)
         {
@@ -123,6 +142,7 @@ namespace WordPadcc.Controllers
             }
         }
 
+        // access public
         [HttpPut("content/{id}")]
         public async Task<IActionResult> UpdateContent(string id)
         {
@@ -153,6 +173,8 @@ namespace WordPadcc.Controllers
             }
         }
 
+        // access public
+        // desc : set Password
         [HttpPut("password/{id}")]
         public async Task<IActionResult> UpdatePassword(string id)
         {
@@ -161,15 +183,62 @@ namespace WordPadcc.Controllers
             {
                 content = await stream.ReadToEndAsync();
             }
-            var data = JsonConvert.DeserializeObject<WordPad>(content);
+            var data = JsonConvert.DeserializeObject<Password>(content);
 
             var wordPads = _wordPadDbContext.WordPads;
             var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
 
-            wordPad.Password = data.Password;
+            wordPad.Password = data.UserPassword;
             _wordPadDbContext.SaveChanges();
             HttpContext.Session.SetString("isAuth", "no");
-            return Json(wordPad);
+            return Json(
+                new
+                {
+                    Id = wordPad.Id,
+                    Url = wordPad.Url,
+                    Content = wordPad.Content,
+                    IsModified = wordPad.IsModified
+                }
+            );
+        }
+
+        [HttpPost("auth/{id}")]
+        public async Task<IActionResult> Authenticate(string id)
+        {
+            string content;
+            using (StreamReader stream = new StreamReader(Request.Body))
+            {
+                content = await stream.ReadToEndAsync();
+            }
+            var data = JsonConvert.DeserializeObject<Password>(content);
+            var wordPads = _wordPadDbContext.WordPads;
+            var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
+
+            if (wordPad == null)
+            {
+                return Json(new { status = false, message = "not found" });
+            }
+
+            if (wordPad.Password == data.UserPassword)
+            {
+                HttpContext.Session.SetString("isAuth", "yes");
+                return Json(new { isAuth = true });
+            }
+            else
+            {
+                return Json(new { isAuth = false });
+            }
+        }
+
+        [HttpPut("reset/{id}")]
+        public IActionResult ResetPassword(string id)
+        {
+            var wordPads = _wordPadDbContext.WordPads;
+            var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
+            wordPad.Password = "";
+            HttpContext.Session.Remove("isAuth");
+            _wordPadDbContext.SaveChanges();
+            return Json(new { status = true, message = "reset successfully" });
         }
     }
 }

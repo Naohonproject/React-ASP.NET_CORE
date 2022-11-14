@@ -9,6 +9,7 @@ import { INIT } from "./reducers/constant";
 import "./App.css";
 import Home from "./components/Home/Home";
 import Share from "./components/Share";
+import Auth from "./components/Auth/Auth";
 
 const nanoid = customAlphabet("1234567890abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
@@ -61,6 +62,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
+        <Route path="/:id/login" element={<Auth />} />
         <Route path="/share/:id" element={<Share />} />
         <Route path="/*" element={<Home />} />
       </Routes>
