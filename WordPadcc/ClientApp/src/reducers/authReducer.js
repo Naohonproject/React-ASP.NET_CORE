@@ -4,11 +4,14 @@ import {
   AUTH_LOADING_SUCCESS,
   AUTH_CHECK,
   RESOLVE_PASSWORD,
+  INIT,
 } from "./constant";
 
 export default (state, action) => {
   const { type, payload } = action;
   switch (type) {
+    case INIT:
+      return { ...state, ...payload };
     case AUTH_LOADING:
       return { ...state, isLoading: true };
     case AUTH_CHECK:

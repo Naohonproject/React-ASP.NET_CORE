@@ -1,6 +1,5 @@
 import axios from "axios";
-import { createContext, useContext, useEffect, useReducer } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useReducer } from "react";
 
 import authReducer from "../reducers/authReducer";
 import {
@@ -9,28 +8,16 @@ import {
   AUTH_LOADING_FAIL,
   RESOLVE_PASSWORD,
 } from "../reducers/constant";
-import { ModalContext } from "../contexts/ModalContext";
 
 export const AuthContext = createContext();
 
 function AuthContextProvider({ children }) {
-  const navigate = useNavigate();
   const [auth, authDispatch] = useReducer(authReducer, {
     isLoading: false,
     isAuthenticated: null,
     isSetPassword: false,
     errorMessage: "",
   });
-
-  const {
-    content: { Url },
-  } = useContext(ModalContext);
-
-  // useEffect(() => {
-  //   if (auth.isAuthenticated) {
-  //     navigate(`/${Url}`);
-  //   }
-  // }, [auth.isAuthenticated]);
 
   const setPassword = async (id, password) => {
     try {
@@ -50,7 +37,9 @@ function AuthContextProvider({ children }) {
         authDispatch({ type: RESOLVE_PASSWORD });
       }
       return res;
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const authContextData = { auth, setPassword, authDispatch, resolvePassword };

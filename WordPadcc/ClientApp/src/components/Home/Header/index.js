@@ -7,22 +7,30 @@ import { AiFillLock } from "react-icons/ai";
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
-import { AUTH_LOADING, AUTH_LOADING_SUCCESS, AUTH_LOADING_FAIL } from "../../../reducers/constant";
+
+import axios from "axios";
 const Index = () => {
-  const { setModalShow } = useContext(ModalContext);
+  const {
+    setModalShow,
+    content: { Url },
+  } = useContext(ModalContext);
   const handleOnClick = (e) => {
     e.preventDefault();
     setModalShow(e.target.id);
   };
 
+  const handleOnRemovePassword = async () => {
+    const response = await axios.put(`/api/reset/${Url}`);
+  };
+
   const {
-    auth: { isAuthenticated },
+    auth: { isSetPassword },
   } = useContext(AuthContext);
 
   return (
     <Container fluid>
       <div className="main-link d-flex flex-row justify-content-center align-items-center">
-        {isAuthenticated === false ? (
+        {isSetPassword ? (
           <a className="px-2 text-center">
             <AiFillLock />
           </a>
@@ -39,9 +47,15 @@ const Index = () => {
           <span style={{ color: "#bebebe" }} className="p-2">
             |
           </span>
-          <a onClick={handleOnClick} id="password" href="">
-            SetPassword
-          </a>
+          {isSetPassword ? (
+            <a onClick={handleOnRemovePassword} id="password" href="">
+              Remove Password
+            </a>
+          ) : (
+            <a onClick={handleOnClick} id="password" href="">
+              Set Password
+            </a>
+          )}
           <span style={{ color: "#bebebe" }} className="p-2">
             |
           </span>

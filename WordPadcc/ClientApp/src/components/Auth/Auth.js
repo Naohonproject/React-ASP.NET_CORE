@@ -25,7 +25,6 @@ const Auth = () => {
     e.preventDefault();
     const url = window.location.pathname.split("/")[1];
     const res = await resolvePassword(url, password);
-    console.log(res);
   };
 
   return isAuthenticated || (isAuthenticated === null && !isSetPassword) ? (

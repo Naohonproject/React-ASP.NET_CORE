@@ -52,7 +52,7 @@ namespace WordPadcc.Controllers
             }
             else if (wordPad.Password != "")
             {
-                if (HttpContext.Session.GetString("Auth") == $"{url}")
+                if (HttpContext.Session.GetString($"{url}") == $"{url}")
                 {
                     return Json(
                         new
@@ -60,7 +60,8 @@ namespace WordPadcc.Controllers
                             Id = wordPad.Id,
                             Url = wordPad.Url,
                             Content = wordPad.Content,
-                            IsModified = wordPad.IsModified
+                            IsModified = wordPad.IsModified,
+                            HasPassword = true
                         }
                     );
                 }
@@ -71,7 +72,16 @@ namespace WordPadcc.Controllers
             }
             else
             {
-                return Json(wordPad);
+                return Json(
+                    new
+                    {
+                        Id = wordPad.Id,
+                        Url = wordPad.Url,
+                        Content = wordPad.Content,
+                        IsModified = wordPad.IsModified,
+                        HasPassword = false
+                    }
+                );
             }
         }
 
@@ -223,7 +233,7 @@ namespace WordPadcc.Controllers
 
             if (wordPad.Password == data.UserPassword)
             {
-                HttpContext.Session.SetString("Auth", $"{url}");
+                HttpContext.Session.SetString($"{url}", $"{url}");
                 return Json(new { isAuth = true });
             }
             else
@@ -232,13 +242,13 @@ namespace WordPadcc.Controllers
             }
         }
 
-        [HttpPut("reset/{id}")]
-        public IActionResult ResetPassword(string id)
+        [HttpPut("reset/{url}")]
+        public IActionResult ResetPassword(string url)
         {
             var wordPads = _wordPadDbContext.WordPads;
-            var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
+            var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
             wordPad.Password = "";
-            HttpContext.Session.Remove("isAuth");
+            HttpContext.Session.Remove($"{url}");
             _wordPadDbContext.SaveChanges();
             return Json(new { status = true, message = "reset successfully" });
         }

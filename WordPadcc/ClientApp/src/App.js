@@ -48,22 +48,21 @@ function App() {
     // for the time when user take the Url with Origin + pathname(ex: https://localhost:5001/jsdfdmnsklfm)
     else {
       if (!location.pathname.includes("login") && !location.pathname.includes("share")) {
-        console.log(location.pathname);
         axios
           .get(`/api${location.pathname}`)
           .then((res) => {
-            console.log(res);
             if (res.data.status === false) {
               if (res.data.message === "not authenticate") {
                 navigate(location.pathname + "/" + "login");
                 authDispatch({ type: AUTH_CHECK });
               }
             } else {
-              const { id, content, url } = res.data;
+              const { id, content, url, hasPassword } = res.data;
               dispatch({
                 type: INIT,
                 payload: { Id: id, Content: content, Url: url },
               });
+              authDispatch({ type: INIT, payload: { isSetPassword: hasPassword } });
             }
           })
           .catch((err) => console.log(err));
