@@ -7,13 +7,17 @@ import { AiFillLock } from "react-icons/ai";
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
-
+import { RESET_PASSWORD } from "../../../reducers/constant";
 import axios from "axios";
+
 const Index = () => {
   const {
     setModalShow,
     content: { Url },
+    dispatch,
   } = useContext(ModalContext);
+
+  const { authDispatch } = useContext(AuthContext);
   const handleOnClick = (e) => {
     e.preventDefault();
     setModalShow(e.target.id);
@@ -21,6 +25,10 @@ const Index = () => {
 
   const handleOnRemovePassword = async () => {
     const response = await axios.put(`/api/reset/${Url}`);
+    if (response.message === "not found") {
+      dispatch({ type: RESET_PASSWORD });
+      authDispatch({ type: RESET_PASSWORD });
+    }
   };
 
   const {

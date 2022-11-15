@@ -33,7 +33,6 @@ namespace WordPadcc
                 string connectionString = Configuration.GetConnectionString("myConnection");
                 options.UseNpgsql(connectionString);
             });
-            //services.AddSingleton<WordPadDbContext, WordPadDbContext>();
 
             services.AddControllersWithViews();
 
@@ -82,5 +81,3 @@ namespace WordPadcc
         }
     }
 }
-
-//dotnet ef dbcontext scaffold "Host=localhost;Database=WordPadCC;Username=postgres;Password=1996" Npgsql.EntityFrameworkCore.PostgreSQL

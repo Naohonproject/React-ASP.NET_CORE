@@ -5,6 +5,7 @@ import {
   AUTH_CHECK,
   RESOLVE_PASSWORD,
   INIT,
+  RESET_PASSWORD,
 } from "./constant";
 
 export default (state, action) => {
@@ -16,6 +17,8 @@ export default (state, action) => {
       return { ...state, isLoading: true };
     case AUTH_CHECK:
       return { ...state, isSetPassword: true };
+    case RESET_PASSWORD:
+      return { ...state, isSetPassword: false };
     case AUTH_LOADING_SUCCESS:
       return { ...state, isLoading: false, isAuthenticated: false, isSetPassword: true };
     case RESOLVE_PASSWORD:

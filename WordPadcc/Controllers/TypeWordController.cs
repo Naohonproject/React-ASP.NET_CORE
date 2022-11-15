@@ -247,10 +247,17 @@ namespace WordPadcc.Controllers
         {
             var wordPads = _wordPadDbContext.WordPads;
             var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
-            wordPad.Password = "";
-            HttpContext.Session.Remove($"{url}");
-            _wordPadDbContext.SaveChanges();
-            return Json(new { status = true, message = "reset successfully" });
+            if (wordPad == null)
+            {
+                return Json(new { status = false, message = "not found" });
+            }
+            else
+            {
+                wordPad.Password = "";
+                HttpContext.Session.Remove($"{url}");
+                _wordPadDbContext.SaveChanges();
+                return Json(new { status = true, message = "reset successfully" });
+            }
         }
     }
 }

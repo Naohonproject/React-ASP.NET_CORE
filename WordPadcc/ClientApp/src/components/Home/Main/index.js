@@ -35,6 +35,7 @@ const index = () => {
       if (Content == "") {
         if (Id != "") {
           if (!IsModified) {
+            console.log("test1");
             axios
               .post(`/api`, { ...content, Content: value })
               .then((res) => {
@@ -42,6 +43,7 @@ const index = () => {
               })
               .catch((err) => {});
           } else {
+            console.log("test2");
             axios
               .put(`/api/content/${Id}`, { ...content, Content: value })
               .then((res) => {
@@ -66,7 +68,7 @@ const index = () => {
             console.log(err);
           });
       }
-    }, 500);
+    }, 600);
     // clean up function of previous state run, means timeOutId is the previous timeoutId
     return () => clearTimeout(timeoutId);
   }, [value]);

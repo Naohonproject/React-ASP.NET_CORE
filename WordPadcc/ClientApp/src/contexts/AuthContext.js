@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useReducer } from "react";
+import { createContext, useReducer, useContext } from "react";
 
 import authReducer from "../reducers/authReducer";
 import {
@@ -7,23 +7,34 @@ import {
   AUTH_LOADING_SUCCESS,
   AUTH_LOADING_FAIL,
   RESOLVE_PASSWORD,
+  SET_PASSWORD,
 } from "../reducers/constant";
+import { ModalContext } from "./ModalContext";
 
 export const AuthContext = createContext();
 
 function AuthContextProvider({ children }) {
+  const { dispatch, content } = useContext(ModalContext);
   const [auth, authDispatch] = useReducer(authReducer, {
     isLoading: false,
     isAuthenticated: null,
     isSetPassword: false,
     errorMessage: "",
   });
-
   const setPassword = async (id, password) => {
     try {
       authDispatch({ type: AUTH_LOADING });
+      if (id === "") {
+        id = window.location.pathname.removeCharAt(1);
+      }
       const res = await axios.put(`/api/password/${id}`, { UserPassword: password });
-      authDispatch({ type: AUTH_LOADING_SUCCESS });
+      console.log(res);
+      if ((res.data.message = "not found")) {
+        dispatch({ type: SET_PASSWORD, payload: { Password: password } });
+        authDispatch({ type: AUTH_LOADING_SUCCESS });
+      } else {
+        authDispatch({ type: AUTH_LOADING_SUCCESS });
+      }
       return res;
     } catch (error) {
       authDispatch({ type: AUTH_LOADING_FAIL, payload: { errorMessage: error.response } });
