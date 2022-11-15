@@ -1,15 +1,46 @@
-import React from "react";
+import { useContext, useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Container from "react-bootstrap/Container";
+import { Navigate, useParams } from "react-router-dom";
+
+import { AuthContext } from "../../contexts/AuthContext";
+import { ModalContext } from "../../contexts/ModalContext";
 
 const Auth = () => {
-  return (
+  const params = useParams();
+  const {
+    auth: { isAuthenticated, isSetPassword },
+    auth,
+    resolvePassword,
+  } = useContext(AuthContext);
+
+  const [password, setPassword] = useState("");
+
+  const handleOnChange = (e) => {
+    setPassword(e.target.value);
+  };
+
+  const handleOnSubmit = async (e) => {
+    e.preventDefault();
+    const url = window.location.pathname.split("/")[1];
+    const res = await resolvePassword(url, password);
+    console.log(res);
+  };
+
+  return isAuthenticated || (isAuthenticated === null && !isSetPassword) ? (
+    <Navigate to={`/${params.id}`} />
+  ) : (
     <Container>
-      <Form className=" text-start">
+      <Form onSubmit={handleOnSubmit} className=" text-start">
         <Form.Group className="mb-3" controlId="formBasicEmail">
           <Form.Label className="mt-2">Password required to edit this document</Form.Label>
-          <Form.Control type="password" placeholder="Your Password" />
+          <Form.Control
+            onChange={handleOnChange}
+            value={password}
+            type="password"
+            placeholder="Your Password"
+          />
         </Form.Group>
         <Button variant="primary" type="submit">
           Submit

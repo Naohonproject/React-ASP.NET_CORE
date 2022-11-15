@@ -19,8 +19,6 @@ export default ({ children }) => {
     isLoading: false,
   });
 
-  const [isLog, setIsLog] = false;
-
   const modalContextData = {
     modalShow,
     setModalShow,

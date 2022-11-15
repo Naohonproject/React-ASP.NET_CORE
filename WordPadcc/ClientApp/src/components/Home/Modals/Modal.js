@@ -7,6 +7,7 @@ import axios from "axios";
 import { TfiSave } from "react-icons/tfi";
 
 import { ModalContext } from "../../../contexts/ModalContext";
+import { AuthContext } from "../../../contexts/AuthContext";
 import {
   CHANGE_URL,
   CHANGE_URL_SUCCESS,
@@ -32,7 +33,10 @@ export default function CustomModal({ heading, name }) {
     dispatchMessage,
   } = useContext(ModalContext);
 
+  const { setPassword } = useContext(AuthContext);
+
   const [path, setPath] = useState(window.location.pathname);
+  const [password, setLocalPassword] = useState("");
 
   useEffect(() => {
     setPath(window.location.pathname);
@@ -52,29 +56,34 @@ export default function CustomModal({ heading, name }) {
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
-    try {
-      dispatchMessage({ type: IS_LOADING });
-      const response = await axios.put(`/api/url/${content.Id}`, {
-        ...content,
-        Url: path.removeCharAt(1),
-      });
-      if (response.data.status) {
-        dispatch({
-          type: CHANGE_URL,
-          payload: { Url: response.data.url, Id: response.data.id },
+    if (name === "url") {
+      try {
+        dispatchMessage({ type: IS_LOADING });
+        const response = await axios.put(`/api/url/${content.Id}`, {
+          ...content,
+          Url: path.removeCharAt(1),
         });
-        dispatchMessage({ type: CHANGE_URL_SUCCESS });
-        navigate("/" + response.data.url);
-        setModalShow(null);
-      } else {
-        setTimeout(() => {
-          dispatchMessage({
-            type: CHANGE_URL_FAIL,
-            payload: { errorMessage: response.data.errorMessage, isLoading: false },
+        if (response.data.status) {
+          dispatch({
+            type: CHANGE_URL,
+            payload: { Url: response.data.url, Id: response.data.id },
           });
-        }, 1000);
-      }
-    } catch (error) {}
+          dispatchMessage({ type: CHANGE_URL_SUCCESS });
+          navigate("/" + response.data.url);
+          setModalShow(null);
+        } else {
+          setTimeout(() => {
+            dispatchMessage({
+              type: CHANGE_URL_FAIL,
+              payload: { errorMessage: response.data.errorMessage, isLoading: false },
+            });
+          }, 1000);
+        }
+      } catch (error) {}
+    } else {
+      await setPassword(content.Id, password);
+      setModalShow(null);
+    }
   };
   return (
     <>
@@ -110,7 +119,12 @@ export default function CustomModal({ heading, name }) {
             )}
             {name === "password" ? (
               <Form.Group className="mb-3">
-                <Form.Control type="text" placeholder="Password" />
+                <Form.Control
+                  onChange={(e) => setLocalPassword(e.target.value)}
+                  value={password}
+                  type="text"
+                  placeholder="Password"
+                />
               </Form.Group>
             ) : (
               ""

@@ -5,6 +5,7 @@ import axios from "axios";
 
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";
+
 import { UPDATE_CONTENT } from "../../../reducers/constant";
 
 const index = () => {

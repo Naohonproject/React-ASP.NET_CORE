@@ -4,12 +4,13 @@ import { useEffect, useContext, memo } from "react";
 import { customAlphabet } from "nanoid";
 import axios from "axios";
 
-import { ModalContext } from "./contexts/ModalContext";
-import { INIT } from "./reducers/constant";
+import { INIT, AUTH_CHECK } from "./reducers/constant";
 import "./App.css";
 import Home from "./components/Home/Home";
 import Share from "./components/Share";
 import Auth from "./components/Auth/Auth";
+import { ModalContext } from "./contexts/ModalContext";
+import { AuthContext } from "./contexts/AuthContext";
 
 const nanoid = customAlphabet("1234567890abcdefghiklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ", 8);
 
@@ -20,6 +21,10 @@ function App() {
     dispatch,
     content: { Id, Url, Content, Password },
   } = useContext(ModalContext);
+  const {
+    authDispatch,
+    auth: { isAuthenticated },
+  } = useContext(AuthContext);
 
   // when App mount, useEffect will be called, 2 cases will be available:
   // * case 1 : user travel to our web with origin(ex:https://localhost:5001) => location.pathname will be equal to "/"
@@ -42,22 +47,29 @@ function App() {
     }
     // for the time when user take the Url with Origin + pathname(ex: https://localhost:5001/jsdfdmnsklfm)
     else {
-      if (location.pathname.length <= 9) {
+      if (!location.pathname.includes("login") && !location.pathname.includes("share")) {
+        console.log(location.pathname);
         axios
           .get(`/api${location.pathname}`)
           .then((res) => {
-            if (res.data.content) {
-              const { id, password, content, url } = res.data;
+            console.log(res);
+            if (res.data.status === false) {
+              if (res.data.message === "not authenticate") {
+                navigate(location.pathname + "/" + "login");
+                authDispatch({ type: AUTH_CHECK });
+              }
+            } else {
+              const { id, content, url } = res.data;
               dispatch({
                 type: INIT,
-                payload: { Id: id, Password: password, Content: content, Url: url },
+                payload: { Id: id, Content: content, Url: url },
               });
             }
           })
           .catch((err) => console.log(err));
       }
     }
-  }, [Id, Url]);
+  }, [Id, Url, window.location.pathname, isAuthenticated]);
 
   return (
     <div className="App">

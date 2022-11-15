@@ -40,11 +40,11 @@ namespace WordPadcc.Controllers
         }
 
         // access: private
-        [HttpGet("{id}")]
-        public IActionResult GetWord(string id)
+        [HttpGet("{url}")]
+        public IActionResult GetWord(string url)
         {
             var wordPads = _wordPadDbContext.WordPads;
-            var wordPad = (from w in wordPads where w.Url == id select w).FirstOrDefault();
+            var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
 
             if (wordPad == null)
             {
@@ -52,7 +52,7 @@ namespace WordPadcc.Controllers
             }
             else if (wordPad.Password != "")
             {
-                if (HttpContext.Session.GetString("isAuth") == "yes")
+                if (HttpContext.Session.GetString("Auth") == $"{url}")
                 {
                     return Json(
                         new
@@ -187,10 +187,12 @@ namespace WordPadcc.Controllers
 
             var wordPads = _wordPadDbContext.WordPads;
             var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
-
+            if (wordPad == null)
+            {
+                return Json(new { status = false, message = "not found" });
+            }
             wordPad.Password = data.UserPassword;
             _wordPadDbContext.SaveChanges();
-            HttpContext.Session.SetString("isAuth", "no");
             return Json(
                 new
                 {
@@ -202,8 +204,8 @@ namespace WordPadcc.Controllers
             );
         }
 
-        [HttpPost("auth/{id}")]
-        public async Task<IActionResult> Authenticate(string id)
+        [HttpPost("auth/{url}")]
+        public async Task<IActionResult> Authenticate(string url)
         {
             string content;
             using (StreamReader stream = new StreamReader(Request.Body))
@@ -212,7 +214,7 @@ namespace WordPadcc.Controllers
             }
             var data = JsonConvert.DeserializeObject<Password>(content);
             var wordPads = _wordPadDbContext.WordPads;
-            var wordPad = (from w in wordPads where w.Id == id select w).FirstOrDefault();
+            var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
 
             if (wordPad == null)
             {
@@ -221,7 +223,7 @@ namespace WordPadcc.Controllers
 
             if (wordPad.Password == data.UserPassword)
             {
-                HttpContext.Session.SetString("isAuth", "yes");
+                HttpContext.Session.SetString("Auth", $"{url}");
                 return Json(new { isAuth = true });
             }
             else
