@@ -39,13 +39,15 @@ const Index = () => {
     <Container fluid>
       <div className="main-link d-flex flex-row justify-content-center align-items-center">
         {isSetPassword ? (
-          <a className="px-2 text-center">
+          <a className="px-2 pb-6px text-center">
             <AiFillLock />
           </a>
         ) : (
           ""
         )}
-        <a href="Something">{window.location.href}</a>
+        <a href={window.location.href} target="_blank">
+          {window.location.href}
+        </a>
       </div>
       <Row className="bg-gray">
         <Col className="option text-center">

@@ -28,7 +28,6 @@ function AuthContextProvider({ children }) {
         id = window.location.pathname.removeCharAt(1);
       }
       const res = await axios.put(`/api/password/${id}`, { UserPassword: password });
-      console.log(res);
       if ((res.data.message = "not found")) {
         dispatch({ type: SET_PASSWORD, payload: { Password: password } });
         authDispatch({ type: AUTH_LOADING_SUCCESS });
