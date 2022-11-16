@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WordPadcc.Models;
 using Microsoft.EntityFrameworkCore;
+// using Alachisoft.NCache.Web.SessionState;
+using Alachisoft.NCache.Caching.Distributed;
 
 namespace WordPadcc
 {
@@ -25,8 +27,22 @@ namespace WordPadcc
         public void ConfigureServices(IServiceCollection services)
         {
             // add memory cache service to be able store session in memory
-            services.AddDistributedMemoryCache();
+            // services.AddNCacheDistributedCache(configuration =>
+            // {
+            //     configuration.CacheName = "democache";
+            //     configuration.EnableLogs = true;
+            //     configuration.ExceptionsEnabled = true;
+            // });
+            // services.AddNCacheSession(configuration =>
+            // {
+            // configuration.CacheName = "demoCache";
+            // configuration.EnableLogs = true;
+            // configuration.SessionAppId = "demoApp";
+            // configuration.SessionOptions.IdleTimeout = 5;
+            // configuration.SessionOptions.CookieName = "AspNetCore.Session";
+            // });
             // add and config session service
+            services.AddDistributedMemoryCache();
             services.AddSession(option =>
             {
                 option.Cookie.Name = "ltb";

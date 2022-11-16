@@ -1,0 +1,10 @@
+TIMESTAMP                  	APPDOMAIN                                    	LOGGERNAME                                 	THREADNAME                                	LEVEL    	MESSAGE
+2022-11-16 11:14:03,185    	WordPadcc                                    	SessionStoreProvider                       	1                                         	ERROR    	[Error]: Alachisoft.NCache.Runtime.Exceptions.ConfigurationException : 'client.ncconf' not found at path D:\CompanyResouce\WordPadcc\client.ncconf
+   at Alachisoft.NCache.Client.ClientConfiguration.LoadConfiguration()
+   at Alachisoft.NCache.Client.Cache.LoadRWTrhuSettings()
+   at Alachisoft.NCache.Client.Cache..ctor(CacheImplBase objectCache, String cacheId, StatisticsCounter perfStatsCollector)
+   at Alachisoft.NCache.Client.CacheManager.GetCacheInternal(String cacheName, CacheConnectionOptions cacheConnectionOptions)
+   at Alachisoft.NCache.Client.CacheManager.GetCache(String cacheName, CacheConnectionOptions cacheConnectionOptions, Boolean isClientCache, Boolean isPessimistic)
+   at Alachisoft.NCache.Client.CacheManager.GetCache(String cacheName, CacheConnectionOptions cacheConnectionOptions, String clientCacheName, CacheConnectionOptions clientCacheConnectionOptions)
+   at Alachisoft.NCache.Caching.Distributed.NCacheDistributedCache.CheckAndInitializeCache()
+
