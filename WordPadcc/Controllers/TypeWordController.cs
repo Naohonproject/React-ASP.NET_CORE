@@ -1,12 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.IO;
 using System.Threading.Tasks;
 using WordPadcc.Models;
-using Newtonsoft.Json;
 using System.Linq;
-using System.Net;
 
 namespace WordPadcc.Controllers
 {
@@ -209,23 +205,15 @@ namespace WordPadcc.Controllers
         // EndPoint : Put api/auth/:url
         // Desc : To Authenticate Password of the note in Database
         [HttpPost("auth/{url}")]
-        public async Task<IActionResult> Authenticate(string url)
+        public IActionResult Authenticate(string url, Password password)
         {
-            string content;
-            using (StreamReader stream = new StreamReader(Request.Body))
-            {
-                content = await stream.ReadToEndAsync();
-            }
-            var data = JsonConvert.DeserializeObject<Password>(content);
-            var wordPads = _db.WordPads;
-            var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
-
-            if (wordPad == null)
+            var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
+            if (note == null)
             {
                 return Json(new { status = false, message = "not found" });
             }
 
-            if (wordPad.Password == data.UserPassword)
+            if (note.Password == password.UserPassword)
             {
                 HttpContext.Session.SetString($"{url}", $"{url}");
                 return Json(new { isAuth = true });
@@ -242,15 +230,15 @@ namespace WordPadcc.Controllers
         [HttpPut("reset/{url}")]
         public async Task<IActionResult> ResetPassword(string url)
         {
-            var wordPads = _db.WordPads;
-            var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
-            if (wordPad == null)
+            // var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
+            var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
+            if (note == null)
             {
                 return Json(new { status = false, message = "not found" });
             }
             else
             {
-                wordPad.Password = "";
+                note.Password = "";
                 HttpContext.Session.Remove($"{url}");
                 await _db.SaveChangesAsync();
                 return Json(new { status = true, message = "reset successfully" });

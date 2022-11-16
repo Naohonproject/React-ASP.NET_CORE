@@ -11,7 +11,6 @@ const Auth = () => {
   const params = useParams();
   const {
     auth: { isAuthenticated, isSetPassword },
-    auth,
     resolvePassword,
   } = useContext(AuthContext);
 
