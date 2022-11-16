@@ -1,4 +1,7 @@
-public class Password
+namespace Utils
 {
-    public string UserPassword { get; set; }
+    public class Password
+    {
+        public string UserPassword { get; set; }
+    }
 }

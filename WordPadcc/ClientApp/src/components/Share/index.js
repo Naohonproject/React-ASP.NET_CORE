@@ -9,8 +9,9 @@ const Share = () => {
   const [content, setContent] = useState("");
   useEffect(() => {
     axios
-      .get(`/api/${params.id}/`)
+      .get(`/api/share/${params.id}/`)
       .then((res) => {
+        console.log(res);
         if (!res.data.status) {
           setContent(res.data.content);
         }

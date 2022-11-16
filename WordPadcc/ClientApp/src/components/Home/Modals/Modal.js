@@ -32,14 +32,13 @@ export default function CustomModal({ heading, name }) {
     message: { errorMessage, isLoading },
     dispatchMessage,
   } = useContext(ModalContext);
-
   const { setPassword } = useContext(AuthContext);
 
-  const [path, setPath] = useState(window.location.pathname);
+  const [path, setPath] = useState(window.location.pathname.removeCharAt(1));
   const [password, setLocalPassword] = useState("");
 
   useEffect(() => {
-    setPath(window.location.pathname);
+    setPath(window.location.pathname.removeCharAt(1));
   }, [window.location.pathname]);
 
   const navigate = useNavigate();
@@ -47,10 +46,11 @@ export default function CustomModal({ heading, name }) {
   const handleClose = () => {
     setModalShow(null);
     dispatchMessage({ type: RESET });
-    setPath(window.location.pathname);
+    setPath(window.location.pathname.removeCharAt(1));
   };
+
   const handleOnUrlChange = (e) => {
-    setPath("/" + e.target.value);
+    setPath(e.target.value);
     dispatchMessage({ type: CHANGE_URL_SUCCESS });
   };
 
@@ -59,9 +59,16 @@ export default function CustomModal({ heading, name }) {
     if (name === "url") {
       try {
         dispatchMessage({ type: IS_LOADING });
-        const response = await axios.put(`/api/url/${content.Id}`, {
+        let id;
+        if (content.Id === "") {
+          id = window.location.pathname.removeCharAt(1);
+        } else {
+          id = content.Id;
+        }
+        const response = await axios.put(`/api/url/${id}`, {
           ...content,
-          Url: path.removeCharAt(1),
+          Url: path,
+          Id: id,
         });
         if (response.data.status) {
           dispatch({
@@ -103,7 +110,7 @@ export default function CustomModal({ heading, name }) {
             {name === "url" ? (
               <Form.Group className="mb-3">
                 <Form.Control
-                  value={path.removeCharAt(1)}
+                  value={path}
                   onChange={handleOnUrlChange}
                   type="text"
                   placeholder="Url"

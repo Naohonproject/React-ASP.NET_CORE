@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using WordPadcc.Models;
 using System.Linq;
+using Utils;
 
 namespace WordPadcc.Controllers
 {
@@ -37,6 +38,20 @@ namespace WordPadcc.Controllers
             return Json(data);
         }
 
+        // Access: public
+        // EndPoint : GET /api/share/:url
+        // Desc : This EndPoint to get note from server
+        [HttpGet("share/{url}")]
+        public IActionResult GetShareNote(string url)
+        {
+            var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
+            if (note == null)
+            {
+                return Json(new { status = false, message = "not found" });
+            }
+            return Json(new { Content = note.Content });
+        }
+
         // Access: Private
         // EndPoint : GET api/:url
         // Desc : This EndPoint to get note from server
@@ -48,7 +63,7 @@ namespace WordPadcc.Controllers
         //                              If false, response to client status:false and message:not authenticate
         //                          If i has no password , response to client that note data with hasPassword : false
         [HttpGet("{url}")]
-        public IActionResult GetWord(string url)
+        public IActionResult GetNote(string url)
         {
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             if (note == null)
@@ -103,7 +118,7 @@ namespace WordPadcc.Controllers
         //                                 if Url==""(empty), response status:false and errorMessage: An error occurred, please try again later.
         //                                 if Url !="", change that note's Url and Update database, return the new Url and Id of the note to client
         [HttpPut("url/{id}")]
-        public async Task<IActionResult> UpdateUrl(string id, WordPad data)
+        public async Task<IActionResult> UpdateUrl(string id, WordPadClone data)
         {
             // find note data by Id
             var note = _db.WordPads.FirstOrDefault(n => n.Id == id);
@@ -230,7 +245,6 @@ namespace WordPadcc.Controllers
         [HttpPut("reset/{url}")]
         public async Task<IActionResult> ResetPassword(string url)
         {
-            // var wordPad = (from w in wordPads where w.Url == url select w).FirstOrDefault();
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             if (note == null)
             {
