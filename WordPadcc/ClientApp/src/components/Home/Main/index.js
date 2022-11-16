@@ -1,5 +1,6 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import axios from "axios";
 
@@ -9,6 +10,7 @@ import { ModalContext } from "../../../contexts/ModalContext";
 import { UPDATE_CONTENT } from "../../../reducers/constant";
 
 const index = () => {
+  const navigate = useNavigate();
   const {
     content: { Content, Id, IsModified },
     content,
@@ -33,9 +35,9 @@ const index = () => {
     const timeoutId = setTimeout(() => {
       // just create a new post request if Content is empty and Id is not empty and except
       if (Content == "") {
+        // when app init , just create a post to server when user type something on textarea,and after Id and Url created, isModified is flag to check whether this Id was exist in db or not, initial value in context store is false, after put content to server, server change it to true after the first time
         if (Id != "") {
           if (!IsModified) {
-            console.log("test1");
             axios
               .post(`/api`, { ...content, Content: value })
               .then((res) => {
@@ -43,7 +45,7 @@ const index = () => {
               })
               .catch((err) => {});
           } else {
-            console.log("test2");
+            // this else will run when use delete all text in existed note,then  Content == "" , Id!="", but ismModified == true , because after the first time , server change content of note or change url, server change state of isModified from false to true then we dispatch that data to store already
             axios
               .put(`/api/content/${Id}`, { ...content, Content: value })
               .then((res) => {
@@ -54,8 +56,27 @@ const index = () => {
               })
               .catch((err) => {});
           }
+        } else {
+          // this is for when user travel to web site with their own path, mean not only https://localhost:5001/ but also ex: https://localhost:5001/13235
+          // first : try to get this url(12235) in db to get note, if server response not found this note in db, the app will not do nothing, this time Id and Url still empty, because App component did not re-render, so that logic not run into above case( id!= "") therefore run into this else statement.Then check when value(state of textarea) change, we send a post to server to create a note with Url and Id equal to user's pathName,if  our post with the same key with some note in db, just navigate app to root origin to create a new path
+          if (value !== "") {
+            const path = window.location.pathname.removeCharAt(1);
+            axios
+              .post(`/api`, { ...content, Content: value, Id: path, Url: path })
+              .then((res) => {
+                if (res.data.message === "data exist in db") {
+                  return navigate("/");
+                }
+                dispatch({
+                  type: UPDATE_CONTENT,
+                  payload: { Content: res.data.content, Id: path, Url: path },
+                });
+              })
+              .catch((err) => {});
+          }
         }
       } else {
+        // this case when Content exist data, just put that data to change exist note's content in db
         axios
           .put(`/api/content/${Id}`, { ...content, Content: value })
           .then((res) => {
@@ -69,7 +90,7 @@ const index = () => {
           });
       }
     }, 600);
-    // clean up function of previous state run, means timeOutId is the previous timeoutId
+    // clean up function of previous state run, means timeOutId is the previous timeoutId.I use this tips to prevent sending too much request to server every time when user change text area, this clean up function will run with value of timeoutId of previous state,just after we stop typing for 600ms , the value of text area will be sent in our request
     return () => clearTimeout(timeoutId);
   }, [value]);
 

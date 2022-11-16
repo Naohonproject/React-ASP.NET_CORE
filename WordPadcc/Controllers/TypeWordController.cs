@@ -32,8 +32,16 @@ namespace WordPadcc.Controllers
                 content = await stream.ReadToEndAsync();
             }
             var data = JsonConvert.DeserializeObject<WordPad>(content);
-
             var wordPads = _wordPadDbContext.WordPads;
+            var existWordPad = (
+                from wp in wordPads
+                where wp.Id == data.Id
+                select wp
+            ).FirstOrDefault();
+            if (existWordPad != null)
+            {
+                return Json(new { status = false, message = "data exist in db" });
+            }
             wordPads.Add(data);
             _wordPadDbContext.SaveChanges();
             return Json(data);
