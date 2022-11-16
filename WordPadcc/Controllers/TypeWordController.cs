@@ -14,14 +14,19 @@ namespace WordPadcc.Controllers
     [Route("api")]
     public class TypeWordController : Controller
     {
+        // declare dependency
         private readonly WordPadDbContext _wordPadDbContext;
 
+        // inject dbContext by constructor.This dependency inject by Runtime by add WordPadDbContext service in startup class
         public TypeWordController(WordPadDbContext wordPadDbContext)
         {
             _wordPadDbContext = wordPadDbContext;
         }
 
-        // access : public
+        // Access Modifier : Public
+        // EndPoint: POST /api/
+        // Desc: post a new note to db
+        // Additional Desc : check whether the incoming request post with note key exist in db or not.If existed, return false status with message.If not existed , add that note to database then response to client the note they recently post
         [HttpPost]
         public async Task<IActionResult> PostWord()
         {
@@ -47,7 +52,16 @@ namespace WordPadcc.Controllers
             return Json(data);
         }
 
-        // access: private
+        // Access: Private
+        // EndPoint : GET api/:url
+        // Desc : This EndPoint to get note from server
+        // Additional Desc : This endpoint firstly check the note exist in db or not:
+        //                      If note does not exist, response to client with status: false and message: not found
+        //                      If note exist in database, check whether that note has password or not:
+        //                          If it has password , check whether incoming request url equal to url in session or not:
+        //                              If true, response to client that note data without password and hasPassword: true
+        //                              If false, response to client status:false and message:not authenticate
+        //                          If i has no password , response to client that note data with hasPassword : false
         [HttpGet("{url}")]
         public IActionResult GetWord(string url)
         {
@@ -93,7 +107,18 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // access : private
+        // Access Modified : Public
+        // EndPoint : Put api/url/:id
+        // Desc : To change the note Url in Database
+        // Additional Desc : This action will read data from incoming request, then check that note exist in db or not:
+        //                      - If the note does not exist:
+        //                          + check Url Incoming request:
+        //                                  if Url==""(empty), response status:false and errorMessage: An error occurred, please try again later.
+        //                                  if Url !="", response to client the new Url and Id,this let Client update there Url,Id but not write to database yet
+        //                      - If the note do exist :
+        //                          + check Url Incoming request:
+        //                                 if Url==""(empty), response status:false and errorMessage: An error occurred, please try again later.
+        //                                 if Url !="", change that note's Url and Update database, return the new Url and Id of the note to client
         [HttpPut("url/{id}")]
         public async Task<IActionResult> UpdateUrl(string id)
         {
@@ -160,7 +185,9 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // access public
+        // Access Modified : Public
+        // EndPoint : Put api/content/:id
+        // Desc : To Update content of the note in Database
         [HttpPut("content/{id}")]
         public async Task<IActionResult> UpdateContent(string id)
         {
@@ -191,8 +218,9 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // access public
-        // desc : set Password
+        // Access Modified : Public
+        // EndPoint : Put api/password/:id
+        // Desc : To Update Password of the note in Database
         [HttpPut("password/{id}")]
         public async Task<IActionResult> UpdatePassword(string id)
         {
@@ -222,6 +250,9 @@ namespace WordPadcc.Controllers
             );
         }
 
+        // Access Modified : Public
+        // EndPoint : Put api/auth/:url
+        // Desc : To Authenticate Password of the note in Database
         [HttpPost("auth/{url}")]
         public async Task<IActionResult> Authenticate(string url)
         {
@@ -250,6 +281,9 @@ namespace WordPadcc.Controllers
             }
         }
 
+        // Access Modified : Public
+        // EndPoint : Put api/reset/:url
+        // Desc : To remove Password of the note in Database
         [HttpPut("reset/{url}")]
         public IActionResult ResetPassword(string url)
         {

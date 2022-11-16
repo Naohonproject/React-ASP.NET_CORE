@@ -40,12 +40,17 @@ function App() {
   //            this time user to our web, there is no data with current Url in database => Post new data
   useEffect(() => {
     // For the first time user travel to web , then they just type the Origin(ex: https://localhost:5001), meats window.location.pathName =="/"
+    // create a random url then push it to window.history , window.history.pathname change, useEffect is called again, location.pathname !== "/", go
+    // into else statement
     if (location.pathname === "/") {
       const id = nanoid();
       navigate(`/${id}`);
+      // dispatch Id,Url to store of Modal Context
       dispatch({ type: INIT, payload: { Id: id, Url: id } });
     }
-    // for the time when user take the Url with Origin + pathname(ex: https://localhost:5001/jsdfdmnsklfm)
+    // for the time when user take the Url with Origin + pathname(ex: https://localhost:5001/jsdfdmnsklfm), just get the note from server when in Url not
+    // contain login and share, this prevents send the request when user use app with Url : http:localhost:5001/share/pathname ,
+    // http:localhost:5001/pathname/login , otherwise it will be render the component with that path in client side then send other request in side that component
     else {
       if (!location.pathname.includes("login") && !location.pathname.includes("share")) {
         axios
