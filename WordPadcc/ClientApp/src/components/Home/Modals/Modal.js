@@ -81,7 +81,7 @@ export default function CustomModal({ heading, name }) {
         }
       } catch (error) {}
     } else {
-      await setPassword(content.Id, password);
+      await setPassword(content.Url, password);
       setModalShow(null);
     }
   };

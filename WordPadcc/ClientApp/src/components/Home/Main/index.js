@@ -12,7 +12,7 @@ import { UPDATE_CONTENT } from "../../../reducers/constant";
 const index = () => {
   const navigate = useNavigate();
   const {
-    content: { Content, Id, IsModified },
+    content: { Content, IsModified, Url },
     content,
     dispatch,
   } = useContext(ModalContext);
@@ -36,7 +36,7 @@ const index = () => {
       // just create a new post request if Content is empty and Id is not empty and except
       if (Content == "") {
         // when app init , just create a post to server when user type something on textarea,and after Id and Url created, isModified is flag to check whether this Id was exist in db or not, initial value in context store is false, after put content to server, server change it to true after the first time
-        if (Id != "") {
+        if (Url != "") {
           if (!IsModified) {
             axios
               .post(`/api`, { ...content, Content: value })
@@ -47,7 +47,7 @@ const index = () => {
           } else {
             // this else will run when use delete all text in existed note,then  Content == "" , Id!="", but ismModified == true , because after the first time , server change content of note or change url, server change state of isModified from false to true then we dispatch that data to store already
             axios
-              .put(`/api/content/${Id}`, { ...content, Content: value })
+              .put(`/api/content/${Url}`, { ...content, Content: value })
               .then((res) => {
                 dispatch({
                   type: UPDATE_CONTENT,
@@ -78,7 +78,7 @@ const index = () => {
       } else {
         // this case when Content exist data, just put that data to change exist note's content in db
         axios
-          .put(`/api/content/${Id}`, { ...content, Content: value })
+          .put(`/api/content/${Url}`, { ...content, Content: value })
           .then((res) => {
             dispatch({
               type: UPDATE_CONTENT,

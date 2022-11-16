@@ -1,4 +1,4 @@
-class Password
+public class Password
 {
     public string UserPassword { get; set; }
 }
