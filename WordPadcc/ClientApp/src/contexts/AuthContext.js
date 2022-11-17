@@ -22,15 +22,15 @@ function AuthContextProvider({ children }) {
     errorMessage: "",
   });
 
-  const setPassword = async (id, password) => {
+  const setPassword = async (url, password) => {
     try {
       dispatchMessage({ type: IS_LOADING });
 
-      if (id === "") {
-        id = window.location.pathname.removeCharAt(1);
+      if (url === "") {
+        url = window.location.pathname.removeCharAt(1);
       }
 
-      const res = await axios.put(`/api/password/${id}`, { UserPassword: password });
+      const res = await axios.put(`/api/notes/${url}/update-password`, { UserPassword: password });
 
       if (res.data.status === false) {
         if (res.data.errorMessage === "not found") {
@@ -53,9 +53,9 @@ function AuthContextProvider({ children }) {
     } catch (error) {}
   };
 
-  const resolvePassword = async (id, password) => {
+  const resolvePassword = async (url, password) => {
     try {
-      const res = await axios.post(`/api/auth/${id}`, { UserPassword: password });
+      const res = await axios.post(`/api/notes/${url}/auth-note`, { UserPassword: password });
       if (res.data.isAuth) {
         authDispatch({ type: RESOLVE_PASSWORD_SUCCESS });
       } else {

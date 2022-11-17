@@ -24,7 +24,7 @@ const Index = () => {
   };
 
   const handleOnRemovePassword = async () => {
-    const response = await axios.put(`/api/reset/${Url}`);
+    const response = await axios.put(`/api/notes/${Url}/reset-password`);
     if (response.message === "not found") {
       dispatch({ type: RESET_PASSWORD });
       authDispatch({ type: RESET_PASSWORD });

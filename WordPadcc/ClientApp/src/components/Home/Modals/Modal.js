@@ -3,8 +3,11 @@ import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 import axios from "axios";
 import { TfiSave } from "react-icons/tfi";
+import { AiFillEyeInvisible } from "react-icons/ai";
+import { AiFillEye } from "react-icons/ai";
 
 import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -36,6 +39,7 @@ export default function CustomModal({ heading, name }) {
 
   const [path, setPath] = useState(window.location.pathname.removeCharAt(1));
   const [password, setLocalPassword] = useState("");
+  const [isVisitable, setIsVisitable] = useState(false);
 
   useEffect(() => {
     setPath(window.location.pathname.removeCharAt(1));
@@ -74,7 +78,7 @@ export default function CustomModal({ heading, name }) {
         } else {
           id = content.Id;
         }
-        const response = await axios.put(`/api/url/${id}`, {
+        const response = await axios.put(`/api/notes/${id}/update-url`, {
           ...content,
           Url: path,
           Id: id,
@@ -137,12 +141,20 @@ export default function CustomModal({ heading, name }) {
             )}
             {name === "password" ? (
               <Form.Group className="mb-3">
-                <Form.Control
-                  onChange={handleOnPasswordChange}
-                  value={password}
-                  type="text"
-                  placeholder="Password"
-                />
+                <InputGroup className="d-flex align-items-center">
+                  <Form.Control
+                    onChange={handleOnPasswordChange}
+                    value={password}
+                    type={isVisitable ? "text" : "password"}
+                    placeholder="Password"
+                  />
+                  <div
+                    onClick={() => setIsVisitable((prev) => !prev)}
+                    className="d-flex hv-pointer align-items-center justify-content-center mr-2"
+                  >
+                    {isVisitable ? <AiFillEye /> : <AiFillEyeInvisible />}
+                  </div>
+                </InputGroup>
                 {errorMessage !== "" ? (
                   <p style={{ color: "red", fontSize: "16px", marginTop: "6px" }}>{errorMessage}</p>
                 ) : (

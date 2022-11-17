@@ -39,7 +39,7 @@ const index = () => {
         if (Url != "") {
           if (!IsModified) {
             axios
-              .post(`/api`, { ...content, Content: value })
+              .post(`/api/notes/addNote`, { ...content, Content: value })
               .then((res) => {
                 dispatch({ type: UPDATE_CONTENT, payload: { Content: res.data.content } });
               })
@@ -47,7 +47,7 @@ const index = () => {
           } else {
             // this else will run when use delete all text in existed note,then  Content == "" , Id!="", but ismModified == true , because after the first time , server change content of note or change url, server change state of isModified from false to true then we dispatch that data to store already
             axios
-              .put(`/api/content/${Url}`, { ...content, Content: value })
+              .put(`/api/notes/${Url}/update-content`, { ...content, Content: value })
               .then((res) => {
                 dispatch({
                   type: UPDATE_CONTENT,
@@ -62,7 +62,7 @@ const index = () => {
           if (value !== "") {
             const path = window.location.pathname.removeCharAt(1);
             axios
-              .post(`/api`, { ...content, Content: value, Id: path, Url: path })
+              .post(`/api/nodes/addNote`, { ...content, Content: value, Id: path, Url: path })
               .then((res) => {
                 if (res.data.message === "data exist in db") {
                   return navigate("/");
@@ -78,7 +78,7 @@ const index = () => {
       } else {
         // this case when Content exist data, just put that data to change exist note's content in db
         axios
-          .put(`/api/content/${Url}`, { ...content, Content: value })
+          .put(`/api/notes/${Url}/update-content`, { ...content, Content: value })
           .then((res) => {
             dispatch({
               type: UPDATE_CONTENT,
