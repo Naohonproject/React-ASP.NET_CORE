@@ -1,14 +1,14 @@
-import { CHANGE_URL_FAIL, CHANGE_URL_SUCCESS, IS_LOADING, RESET } from "./constant";
+import { UPDATE_FAIL, CHANGE_SUCCESS, IS_LOADING, RESET } from "./constant";
 
 export default (state, action) => {
   const { type, payload } = action;
   switch (type) {
     case IS_LOADING:
       return { ...state, isLoading: true };
-    case CHANGE_URL_SUCCESS:
+    case CHANGE_SUCCESS:
       return { ...state, isLoading: false, errorMessage: "" };
-    case CHANGE_URL_FAIL:
-      return { ...state, ...payload };
+    case UPDATE_FAIL:
+      return { ...state, isLoading: false, ...payload };
     case RESET:
       return { ...state, isLoading: false, errorMessage: "" };
     default:

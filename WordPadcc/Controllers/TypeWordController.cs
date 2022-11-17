@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using WordPadcc.Models;
 using System.Linq;
 using Utils;
+using BC = BCrypt.Net.BCrypt;
+using System;
 
 namespace WordPadcc.Controllers
 {
@@ -198,13 +200,38 @@ namespace WordPadcc.Controllers
         [HttpPut("password/{url}")]
         public async Task<IActionResult> UpdatePassword(string url, Password password)
         {
+            int length = password.UserPassword.Length;
+            // validate password
+            if (password.UserPassword.Length < 6)
+            {
+                return Json(
+                    new
+                    {
+                        status = false,
+                        errorMessage = "Password length must be at least 6 characters"
+                    }
+                );
+            }
+            // validate password ok! find that note in database
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
+            // if note does not exist in data base return status = false and message = "not found"
             if (note == null)
             {
-                return Json(new { status = false, message = "not found" });
+                return Json(new { status = false, errorMessage = "not found" });
             }
-            note.Password = password.UserPassword;
+
+            // generate salt
+            int factor = ((DateTime.Now.Year - 2000) / 2 - 6);
+            string salt = BC.GenerateSalt(factor);
+
+            // hashing password
+            string hashedUserPassword = BC.HashPassword(password.UserPassword, salt);
+
+            // update password in DbContext
+            note.Password = hashedUserPassword;
+            // Call SaveChangeAsync to save changes to database
             await _db.SaveChangesAsync();
+            // return the database's note data without
             return Json(
                 new
                 {

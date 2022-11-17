@@ -1,6 +1,4 @@
 import {
-  AUTH_LOADING,
-  AUTH_LOADING_FAIL,
   AUTH_LOADING_SUCCESS,
   AUTH_CHECK,
   RESOLVE_PASSWORD,
@@ -13,18 +11,14 @@ export default (state, action) => {
   switch (type) {
     case INIT:
       return { ...state, ...payload };
-    case AUTH_LOADING:
-      return { ...state, isLoading: true };
     case AUTH_CHECK:
       return { ...state, isSetPassword: true };
     case RESET_PASSWORD:
       return { ...state, isSetPassword: false };
     case AUTH_LOADING_SUCCESS:
-      return { ...state, isLoading: false, isAuthenticated: false, isSetPassword: true };
+      return { ...state, isAuthenticated: false, isSetPassword: true };
     case RESOLVE_PASSWORD:
       return { ...state, isAuthenticated: true };
-    case AUTH_LOADING_FAIL:
-      return { ...state, ...payload };
     default:
       return state;
   }

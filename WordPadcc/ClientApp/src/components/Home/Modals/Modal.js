@@ -10,8 +10,8 @@ import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
 import {
   CHANGE_URL,
-  CHANGE_URL_SUCCESS,
-  CHANGE_URL_FAIL,
+  CHANGE_SUCCESS,
+  UPDATE_FAIL,
   IS_LOADING,
   RESET,
 } from "../../../reducers/constant";
@@ -46,12 +46,21 @@ export default function CustomModal({ heading, name }) {
   const handleClose = () => {
     setModalShow(null);
     dispatchMessage({ type: RESET });
-    setPath(window.location.pathname.removeCharAt(1));
+    if (name === "url") {
+      setPath(window.location.pathname.removeCharAt(1));
+    } else if (name === "password") {
+      setLocalPassword("");
+    }
   };
 
   const handleOnUrlChange = (e) => {
     setPath(e.target.value);
-    dispatchMessage({ type: CHANGE_URL_SUCCESS });
+    dispatchMessage({ type: CHANGE_SUCCESS });
+  };
+
+  const handleOnPasswordChange = (e) => {
+    setLocalPassword(e.target.value);
+    dispatchMessage({ type: CHANGE_SUCCESS });
   };
 
   const handleOnSubmit = async (e) => {
@@ -75,21 +84,23 @@ export default function CustomModal({ heading, name }) {
             type: CHANGE_URL,
             payload: { Url: response.data.url, Id: response.data.id },
           });
-          dispatchMessage({ type: CHANGE_URL_SUCCESS });
+          dispatchMessage({ type: CHANGE_SUCCESS });
           navigate("/" + response.data.url);
           setModalShow(null);
         } else {
           setTimeout(() => {
             dispatchMessage({
-              type: CHANGE_URL_FAIL,
-              payload: { errorMessage: response.data.errorMessage, isLoading: false },
+              type: UPDATE_FAIL,
+              payload: { errorMessage: response.data.errorMessage },
             });
           }, 1000);
         }
       } catch (error) {}
     } else {
-      await setPassword(content.Url, password);
-      setModalShow(null);
+      const isSuccess = await setPassword(content.Url, password);
+      if (isSuccess) {
+        setModalShow(null);
+      }
     }
   };
   return (
@@ -115,7 +126,7 @@ export default function CustomModal({ heading, name }) {
                   type="text"
                   placeholder="Url"
                 />
-                {errorMessage ? (
+                {errorMessage !== "" ? (
                   <p style={{ color: "red", fontSize: "16px", marginTop: "6px" }}>{errorMessage}</p>
                 ) : (
                   ""
@@ -127,11 +138,16 @@ export default function CustomModal({ heading, name }) {
             {name === "password" ? (
               <Form.Group className="mb-3">
                 <Form.Control
-                  onChange={(e) => setLocalPassword(e.target.value)}
+                  onChange={handleOnPasswordChange}
                   value={password}
                   type="text"
                   placeholder="Password"
                 />
+                {errorMessage !== "" ? (
+                  <p style={{ color: "red", fontSize: "16px", marginTop: "6px" }}>{errorMessage}</p>
+                ) : (
+                  ""
+                )}
               </Form.Group>
             ) : (
               ""

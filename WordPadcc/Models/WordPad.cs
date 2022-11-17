@@ -12,7 +12,7 @@ namespace WordPadcc.Models
         [Column(TypeName = "text")]
         public string Content { get; set; }
 
-        [StringLength(20)]
+        [StringLength(100)]
         public string Password { get; set; }
 
         [Required]
