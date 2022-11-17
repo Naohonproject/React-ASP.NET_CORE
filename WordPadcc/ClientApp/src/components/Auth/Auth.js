@@ -5,25 +5,27 @@ import Container from "react-bootstrap/Container";
 import { Navigate, useParams } from "react-router-dom";
 
 import { AuthContext } from "../../contexts/AuthContext";
-import { ModalContext } from "../../contexts/ModalContext";
+import { TYPING_PASSWORD } from "../../reducers/constant";
 
 const Auth = () => {
   const params = useParams();
   const {
-    auth: { isAuthenticated, isSetPassword },
+    auth: { isAuthenticated, isSetPassword, errorMessage },
     resolvePassword,
+    authDispatch,
   } = useContext(AuthContext);
 
   const [password, setPassword] = useState("");
 
   const handleOnChange = (e) => {
     setPassword(e.target.value);
+    authDispatch({ type: TYPING_PASSWORD });
   };
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
     const url = window.location.pathname.split("/")[1];
-    const res = await resolvePassword(url, password);
+    await resolvePassword(url, password);
   };
 
   return isAuthenticated || (isAuthenticated === null && !isSetPassword) ? (
@@ -39,6 +41,11 @@ const Auth = () => {
             type="password"
             placeholder="Your Password"
           />
+          {errorMessage !== "" ? (
+            <p style={{ color: "red", fontSize: "16px", marginTop: "6px" }}>{errorMessage}</p>
+          ) : (
+            ""
+          )}
         </Form.Group>
         <Button variant="primary" type="submit">
           Submit

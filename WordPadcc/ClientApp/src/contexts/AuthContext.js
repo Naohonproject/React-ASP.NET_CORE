@@ -5,7 +5,8 @@ import authReducer from "../reducers/authReducer";
 import {
   IS_LOADING,
   AUTH_LOADING_SUCCESS,
-  RESOLVE_PASSWORD,
+  RESOLVE_PASSWORD_SUCCESS,
+  RESOLVE_PASSWORD_FAIL,
   SET_PASSWORD,
   UPDATE_FAIL,
 } from "../reducers/constant";
@@ -18,6 +19,7 @@ function AuthContextProvider({ children }) {
   const [auth, authDispatch] = useReducer(authReducer, {
     isAuthenticated: null,
     isSetPassword: false,
+    errorMessage: "",
   });
 
   const setPassword = async (id, password) => {
@@ -55,7 +57,9 @@ function AuthContextProvider({ children }) {
     try {
       const res = await axios.post(`/api/auth/${id}`, { UserPassword: password });
       if (res.data.isAuth) {
-        authDispatch({ type: RESOLVE_PASSWORD });
+        authDispatch({ type: RESOLVE_PASSWORD_SUCCESS });
+      } else {
+        authDispatch({ type: RESOLVE_PASSWORD_FAIL, payload: { errorMessage: res.data.message } });
       }
       return res;
     } catch (error) {

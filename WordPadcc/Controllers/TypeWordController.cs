@@ -36,8 +36,15 @@ namespace WordPadcc.Controllers
                 return Json(new { status = false, message = "data exist in db" });
             }
             _db.WordPads.Add(data);
-            await _db.SaveChangesAsync();
-            return Json(data);
+            try
+            {
+                await _db.SaveChangesAsync();
+                return Json(data);
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         // Access: public
@@ -168,8 +175,15 @@ namespace WordPadcc.Controllers
                     );
                 }
                 note.Url = data.Url;
-                await _db.SaveChangesAsync();
-                return Json(new { status = true, Id = note.Id, Url = note.Url });
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    return Json(new { status = true, Id = note.Id, Url = note.Url });
+                }
+                catch (System.Exception)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
         }
 
@@ -185,8 +199,15 @@ namespace WordPadcc.Controllers
             {
                 note.Content = data.Content;
                 note.IsModified = true;
-                await _db.SaveChangesAsync();
-                return Json(note);
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    return Json(note);
+                }
+                catch (System.Exception)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
             else
             {
@@ -229,18 +250,25 @@ namespace WordPadcc.Controllers
 
             // update password in DbContext
             note.Password = hashedUserPassword;
-            // Call SaveChangeAsync to save changes to database
-            await _db.SaveChangesAsync();
-            // return the database's note data without
-            return Json(
-                new
-                {
-                    Id = note.Id,
-                    Url = note.Url,
-                    Content = note.Content,
-                    IsModified = note.IsModified
-                }
-            );
+            try
+            {
+                // Call SaveChangeAsync to save changes to database
+                await _db.SaveChangesAsync();
+                // return the database's note data without
+                return Json(
+                    new
+                    {
+                        Id = note.Id,
+                        Url = note.Url,
+                        Content = note.Content,
+                        IsModified = note.IsModified
+                    }
+                );
+            }
+            catch (System.Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         // Access Modified : Public
@@ -255,14 +283,16 @@ namespace WordPadcc.Controllers
                 return Json(new { status = false, message = "not found" });
             }
 
-            if (note.Password == password.UserPassword)
+            bool isValidPassword = BC.Verify(password.UserPassword, note.Password);
+
+            if (isValidPassword)
             {
                 HttpContext.Session.SetString($"{url}", $"{url}");
-                return Json(new { isAuth = true });
+                return Json(new { isAuth = true, message = "successfull" });
             }
             else
             {
-                return Json(new { isAuth = false });
+                return Json(new { isAuth = false, message = "Invalid Password" });
             }
         }
 
@@ -281,8 +311,15 @@ namespace WordPadcc.Controllers
             {
                 note.Password = "";
                 HttpContext.Session.Remove($"{url}");
-                await _db.SaveChangesAsync();
-                return Json(new { status = true, message = "reset successfully" });
+                try
+                {
+                    await _db.SaveChangesAsync();
+                    return Json(new { status = true, message = "reset successfully" });
+                }
+                catch (System.Exception)
+                {
+                    return StatusCode(StatusCodes.Status500InternalServerError);
+                }
             }
         }
     }
