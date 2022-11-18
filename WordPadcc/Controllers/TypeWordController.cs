@@ -23,15 +23,19 @@ namespace WordPadcc.Controllers
         }
 
         // Access Modifier : Public
-        // EndPoint: POST /api/
-        // Desc: post a new note to db
+        // EndPoint: POST /api/notes
+        // Desc: post a new note into notes table in wordPadCC Database
         // Additional Desc : check whether the incoming request post with note key exist in db or not.If existed, return false status with message.If not existed , add that note to database then response to client the note they recently post
-        [HttpPost("addNote")]
+        [HttpPost]
         public async Task<IActionResult> PostWord(WordPad data)
         {
             var existedNote = _db.WordPads.FirstOrDefault(n => n.Url == data.Url);
 
             if (existedNote != null)
+            {
+                return Json(new { status = false, message = "note exists in database" });
+            }
+            else if (data.Url == "" || data.Id == "")
             {
                 return Json(new { status = false, message = "note exists in database" });
             }
@@ -47,37 +51,61 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // Access Modified : Public
-        // EndPoint : Put api/content/:id
+        // Access Modifier : Private
+        // EndPoint : PATCH api/notes/:url/update-content
         // Desc : To Update content of the note in Database
-        [HttpPut("{url}/update-content")]
+        [HttpPatch("{url}/update-content")]
         public async Task<IActionResult> UpdateContent(string url, WordPad data)
         {
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
 
-            if (note != null)
-            {
-                note.Content = data.Content;
-                note.IsModified = true;
-                try
-                {
-                    await _db.SaveChangesAsync();
-                    return Json(note);
-                }
-                catch (System.Exception)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
-            }
-            else
+            if (note == null)
             {
                 return Json(new { status = false, message = "Not Found" });
             }
+            else
+            {
+                if (note.Password != "" && note.Password != null)
+                {
+                    if (HttpContext.Session.GetString($"{url}") == $"{url}")
+                    {
+                        note.Content = data.Content;
+                        note.IsModified = true;
+                        try
+                        {
+                            await _db.SaveChangesAsync();
+                            return Json(note);
+                        }
+                        catch (System.Exception)
+                        {
+                            return StatusCode(StatusCodes.Status500InternalServerError);
+                        }
+                    }
+                    else
+                    {
+                        return Json(new { status = false, message = "not authenticate" });
+                    }
+                }
+                else
+                {
+                    note.Content = data.Content;
+                    note.IsModified = true;
+                    try
+                    {
+                        await _db.SaveChangesAsync();
+                        return Json(note);
+                    }
+                    catch (System.Exception)
+                    {
+                        return StatusCode(StatusCodes.Status500InternalServerError);
+                    }
+                }
+            }
         }
 
-        // Access: public
-        // EndPoint : GET /api/share/:url
-        // Desc : This EndPoint to get note from server
+        // Access Modifier: Public
+        // EndPoint : GET /api/notes/:url/share
+        // Desc : This EndPoint to get note from server no need authentication
         [HttpGet("{url}/share")]
         public IActionResult GetShareNote(string url)
         {
@@ -89,8 +117,8 @@ namespace WordPadcc.Controllers
             return Json(new { Content = note.Content });
         }
 
-        // Access: Private
-        // EndPoint : GET api/:url
+        // Access Modifier: Private
+        // EndPoint : GET api/notes/:url
         // Desc : This EndPoint to get note from server
         // Additional Desc : This endpoint firstly check the note exist in db or not:
         //                      If note does not exist, response to client with status: false and message: not found
@@ -99,7 +127,7 @@ namespace WordPadcc.Controllers
         //                              If true, response to client that note data without password and hasPassword: true
         //                              If false, response to client status:false and message:not authenticate
         //                          If i has no password , response to client that note data with hasPassword : false
-        [HttpGet("{url}/getNote")]
+        [HttpGet("{url}")]
         public IActionResult GetNote(string url)
         {
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
@@ -142,8 +170,8 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // Access Modified : Public
-        // EndPoint : Put api/url/:id
+        // Access Modifier : Private
+        // EndPoint : PATCH api/notes/:id/update-url
         // Desc : To change the note Url in Database
         // Additional Desc : This action will read data from incoming request, then check that note exist in db or not:
         //                      - If the note does not exist:
@@ -154,11 +182,11 @@ namespace WordPadcc.Controllers
         //                          + check Url Incoming request:
         //                                 if Url==""(empty), response status:false and errorMessage: An error occurred, please try again later.
         //                                 if Url !="", change that note's Url and Update database, return the new Url and Id of the note to client
-        [HttpPut("{id}/update-url")]
-        public async Task<IActionResult> UpdateUrl(string id, WordPadClone data)
+        [HttpPatch("{url}/update-url")]
+        public async Task<IActionResult> UpdateUrl(string url, WordPadClone data)
         {
             // find note data by Id
-            var note = _db.WordPads.FirstOrDefault(n => n.Id == id);
+            var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             // wordPad != null, mean this wordPad was saved before,return new one after change the database
             if (note == null)
             {
@@ -177,48 +205,96 @@ namespace WordPadcc.Controllers
             // mean, just when user travel to website, did not create any thing, note did create in data base, just response what they send
             else
             {
-                // new Url is empty, response error message
-                if (data.Url == "")
+                if (note.Password != "" && note.Password != null)
                 {
-                    return Json(
-                        new
+                    if (HttpContext.Session.GetString($"{url}") == $"{url}")
+                    {
+                        if (data.Url == "")
                         {
-                            status = false,
-                            errorMessage = "An error occurred, please try again later."
+                            return Json(
+                                new
+                                {
+                                    status = false,
+                                    errorMessage = "An error occurred, please try again later."
+                                }
+                            );
                         }
-                    );
-                }
 
-                // find note by Url to check whether the sent url is exist or not in database
-                var noteWithExistedUrl = _db.WordPads.FirstOrDefault(n => n.Url == data.Url);
-                // if Existed, Response ErrorMessage
-                if (noteWithExistedUrl != null)
-                {
-                    return Json(
-                        new
+                        // find note by Url to check whether the sent url is exist or not in database
+                        var noteWithExistedUrl = _db.WordPads.FirstOrDefault(
+                            n => n.Url == data.Url
+                        );
+                        // if Existed, Response ErrorMessage
+                        if (noteWithExistedUrl != null)
                         {
-                            status = false,
-                            errorMessage = "That one is already in use, please try a different one."
+                            return Json(
+                                new
+                                {
+                                    status = false,
+                                    errorMessage = "That one is already in use, please try a different one."
+                                }
+                            );
                         }
-                    );
+                        note.Url = data.Url;
+                        try
+                        {
+                            await _db.SaveChangesAsync();
+                            return Json(new { status = true, Id = note.Id, Url = note.Url });
+                        }
+                        catch (System.Exception)
+                        {
+                            return StatusCode(StatusCodes.Status500InternalServerError);
+                        }
+                    }
+                    else
+                    {
+                        return Json(new { status = false, message = "not authenticate" });
+                    }
                 }
-                note.Url = data.Url;
-                try
+                else
                 {
-                    await _db.SaveChangesAsync();
-                    return Json(new { status = true, Id = note.Id, Url = note.Url });
-                }
-                catch (System.Exception)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
+                    if (data.Url == "")
+                    {
+                        return Json(
+                            new
+                            {
+                                status = false,
+                                errorMessage = "An error occurred, please try again later."
+                            }
+                        );
+                    }
+
+                    // find note by Url to check whether the sent url is exist or not in database
+                    var noteWithExistedUrl = _db.WordPads.FirstOrDefault(n => n.Url == data.Url);
+                    // if Existed, Response ErrorMessage
+                    if (noteWithExistedUrl != null)
+                    {
+                        return Json(
+                            new
+                            {
+                                status = false,
+                                errorMessage = "That one is already in use, please try a different one."
+                            }
+                        );
+                    }
+                    note.Url = data.Url;
+                    try
+                    {
+                        await _db.SaveChangesAsync();
+                        return Json(new { status = true, Id = note.Id, Url = note.Url });
+                    }
+                    catch (System.Exception)
+                    {
+                        return StatusCode(StatusCodes.Status500InternalServerError);
+                    }
                 }
             }
         }
 
-        // Access Modified : Public
-        // EndPoint : Put api/password/:id
+        // Access Modifier : Private
+        // EndPoint : PATCH /api/notes/:url/update-password
         // Desc : To Update Password of the note in Database
-        [HttpPut("{url}/update-password")]
+        [HttpPatch("{url}/update-password")]
         public async Task<IActionResult> UpdatePassword(string url, Password password)
         {
             int length = password.UserPassword.Length;
@@ -271,8 +347,8 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // Access Modified : Public
-        // EndPoint : Put api/auth/:url
+        // Access Modifier : Public
+        // EndPoint : POST api/notes/:url/auth-note
         // Desc : To Authenticate Password of the note in Database
         [HttpPost("{url}/auth-note")]
         public IActionResult Authenticate(string url, Password password)
@@ -283,29 +359,40 @@ namespace WordPadcc.Controllers
                 return Json(new { status = false, message = "not found" });
             }
 
-            bool isValidPassword = BC.Verify(password.UserPassword, note.Password);
+            try
+            {
+                bool isValidPassword = BC.Verify(password.UserPassword, note.Password);
 
-            if (isValidPassword)
-            {
-                HttpContext.Session.SetString($"{url}", $"{url}");
-                return Json(new { isAuth = true, message = "successfull" });
+                if (isValidPassword)
+                {
+                    HttpContext.Session.SetString($"{url}", $"{url}");
+                    return Json(new { isAuth = true, message = "successfull" });
+                }
+                else
+                {
+                    return Json(new { isAuth = false, message = "Invalid Password" });
+                }
             }
-            else
+            catch (System.Exception)
             {
-                return Json(new { isAuth = false, message = "Invalid Password" });
+                return Json(new { isAuth = false, message = "System Errors,Please Try Again" });
             }
         }
 
-        // Access Modified : Public
-        // EndPoint : Put api/reset/:url
+        // Access Modifier : Public
+        // EndPoint : PATCH api/note/:url/reset-password
         // Desc : To remove Password of the note in Database
-        [HttpPut("{url}/reset-password")]
+        [HttpPatch("{url}/reset-password")]
         public async Task<IActionResult> ResetPassword(string url)
         {
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             if (note == null)
             {
                 return Json(new { status = false, message = "not found" });
+            }
+            else if (note.Password == "" || note.Password == null)
+            {
+                return Json(new { status = true, message = "reset successfully" });
             }
             else
             {

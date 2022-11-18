@@ -30,7 +30,9 @@ function AuthContextProvider({ children }) {
         url = window.location.pathname.removeCharAt(1);
       }
 
-      const res = await axios.put(`/api/notes/${url}/update-password`, { UserPassword: password });
+      const res = await axios.patch(`/api/notes/${url}/update-password`, {
+        UserPassword: password,
+      });
 
       if (res.data.status === false) {
         if (res.data.errorMessage === "not found") {

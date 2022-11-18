@@ -78,12 +78,15 @@ export default function CustomModal({ heading, name }) {
         } else {
           id = content.Id;
         }
-        const response = await axios.put(`/api/notes/${id}/update-url`, {
+        const response = await axios.patch(`/api/notes/${id}/update-url`, {
           ...content,
           Url: path,
           Id: id,
         });
-        if (response.data.status) {
+        // when some client set password for this notes but other client want to change url, then they must login first
+        if (response.data.message === "not authenticate") {
+          navigate(`${window.location.pathname}/login`);
+        } else if (response.data.status) {
           dispatch({
             type: CHANGE_URL,
             payload: { Url: response.data.url, Id: response.data.id },

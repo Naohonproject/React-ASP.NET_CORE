@@ -3,12 +3,13 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { AiFillLock } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
 import { RESET_PASSWORD } from "../../../reducers/constant";
-import axios from "axios";
 
 const Index = () => {
   const {
@@ -18,15 +19,32 @@ const Index = () => {
   } = useContext(ModalContext);
 
   const { authDispatch } = useContext(AuthContext);
+
+  const navigate = useNavigate();
+
   const handleOnClick = (e) => {
     e.preventDefault();
-    setModalShow(e.target.id);
+    // if a client want to set password , but another client set password on the note already, but this client does not know, let them login first
+    if (e.target.id === "password") {
+      axios.get(`/api/notes${location.pathname}`).then((res) => {
+        if (res.data.message === "not authenticate") {
+          navigate(location.pathname + "/" + "login");
+          authDispatch({ type: AUTH_CHECK });
+        } else {
+          setModalShow(e.target.id);
+        }
+      });
+    } else {
+      setModalShow(e.target.id);
+    }
   };
 
   const handleOnRemovePassword = async () => {
-    const response = await axios.put(`/api/notes/${Url}/reset-password`);
+    const response = await axios.patch(`/api/notes/${Url}/reset-password`);
     if (response.message === "not found") {
       dispatch({ type: RESET_PASSWORD });
+      authDispatch({ type: RESET_PASSWORD });
+    } else {
       authDispatch({ type: RESET_PASSWORD });
     }
   };

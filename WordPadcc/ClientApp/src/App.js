@@ -54,7 +54,7 @@ function App() {
     else {
       if (!location.pathname.includes("login") && !location.pathname.includes("share")) {
         axios
-          .get(`/api/notes${location.pathname}/getNote`)
+          .get(`/api/notes${location.pathname}`)
           .then((res) => {
             if (res.data.status === false) {
               if (res.data.message === "not authenticate") {
