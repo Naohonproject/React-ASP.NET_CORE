@@ -146,6 +146,7 @@ export default function CustomModal({ heading, name }) {
               <Form.Group className="mb-3">
                 <InputGroup className="d-flex align-items-center">
                   <Form.Control
+                    autoComplete="new-password"
                     onChange={handleOnPasswordChange}
                     value={password}
                     type={isVisitable ? "text" : "password"}
