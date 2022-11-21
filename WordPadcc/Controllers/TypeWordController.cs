@@ -37,8 +37,20 @@ namespace WordPadcc.Controllers
             }
             else if (data.Url == "" || data.Id == "")
             {
-                return Json(new { status = false, message = "note exists in database" });
+                return Json(new { status = false, message = "note have to has Url" });
             }
+
+            if (data.Password != "")
+            {
+                // generate salt
+                int factor = ((DateTime.Now.Year - 2000) / 2 - 6);
+                string salt = BC.GenerateSalt(factor);
+
+                // hashing password
+                string hashedUserPassword = BC.HashPassword(data.Password, salt);
+                data.Password = hashedUserPassword;
+            }
+
             _db.WordPads.Add(data);
             try
             {
