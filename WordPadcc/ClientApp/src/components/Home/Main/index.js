@@ -1,15 +1,15 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import axios from "axios";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";
-
 import { UPDATE_CONTENT } from "../../../reducers/constant";
 
-const index = () => {
+const Main = () => {
+  // navigate hook
   const navigate = useNavigate();
   const {
     content: { Content, IsModified, Url },
@@ -17,15 +17,43 @@ const index = () => {
     dispatch,
   } = useContext(ModalContext);
 
+  // local states
   const [value, setValue] = useState(Content);
+  const [connection, setConnection] = useState(null);
+
+  // component's side effects
+
+  // init connection when Main is mounted into DOM
+  useEffect(() => {
+    // config the builder and then build a instance of connect
+    const connect = new HubConnectionBuilder()
+      .withUrl("/socket/notes/update-content")
+      .withAutomaticReconnect()
+      .build();
+    // set connect to connection state
+    setConnection(connect);
+  }, []);
+
+  // listen socket event
+  // side effect when connection state is changed,start the Socket client and start listening the event
+  useEffect(() => {
+    if (connection) {
+      connection.start().then(() => {
+        connection.on("update-node-content", (message) => {
+          dispatch({
+            type: UPDATE_CONTENT,
+            payload: {
+              Content: message,
+            },
+          });
+        });
+      });
+    }
+  }, [connection]);
 
   useEffect(() => {
     setValue(Content);
   }, [Content]);
-
-  const handleOnChange = (event) => {
-    setValue(event.target.value);
-  };
 
   // value change
   // useEffect callback is called => clean up function call with value of previous state =>statements inside useEffect is called
@@ -52,9 +80,10 @@ const index = () => {
                 if (res.data.message === "not authenticate") {
                   navigate(`${window.location.pathname}/login`);
                 } else if (res.data.status !== false) {
+                  sendMessage(res.data.content);
                   dispatch({
                     type: UPDATE_CONTENT,
-                    payload: { Content: res.data.content, IsModified: res.data.isModified },
+                    payload: { /* Content: res.data.content, */ IsModified: res.data.isModified },
                   });
                 }
               })
@@ -87,9 +116,10 @@ const index = () => {
             if (res.data.message === "not authenticate") {
               navigate(`${window.location.pathname}/login`);
             } else if (res.data.status !== false) {
+              sendMessage(res.data.content);
               dispatch({
                 type: UPDATE_CONTENT,
-                payload: { Content: res.data.content, IsModified: res.data.isModified },
+                payload: { /* Content: res.data.content,  */ IsModified: res.data.isModified },
               });
             }
           })
@@ -102,6 +132,16 @@ const index = () => {
     return () => clearTimeout(timeoutId);
   }, [value]);
 
+  const handleOnChange = (event) => {
+    setValue(event.target.value);
+  };
+
+  const sendMessage = async (message) => {
+    if (connection) {
+      connection.send("SendMessage", message);
+    }
+  };
+
   return (
     <div className="body-container">
       <div className="document-container">
@@ -111,4 +151,4 @@ const index = () => {
   );
 };
 
-export default index;
+export default Main;
