@@ -40,13 +40,15 @@ const Main = () => {
   useEffect(() => {
     if (connection) {
       connection.start().then(() => {
-        connection.on("update-node-content", (message) => {
-          dispatch({
-            type: UPDATE_CONTENT,
-            payload: {
-              Content: message,
-            },
-          });
+        connection.on("update-node-content", (message, url) => {
+          if (url === window.location.pathname.removeCharAt(1)) {
+            dispatch({
+              type: UPDATE_CONTENT,
+              payload: {
+                Content: message,
+              },
+            });
+          }
         });
       });
     }
@@ -117,7 +119,7 @@ const Main = () => {
             if (res.data.message === "not authenticate") {
               navigate(`${window.location.pathname}/login`);
             } else if (res.data.status !== false) {
-              sendMessage(res.data.content);
+              sendMessage(res.data.content, window.location.pathname.removeCharAt(1));
               dispatch({
                 type: UPDATE_CONTENT,
                 payload: { /* Content: res.data.content,  */ IsModified: res.data.isModified },
@@ -137,9 +139,9 @@ const Main = () => {
     setValue(event.target.value);
   };
 
-  const sendMessage = async (message) => {
+  const sendMessage = async (message, url) => {
     if (connection) {
-      connection.send("SendMessage", message);
+      connection.send("SendMessage", message, url);
     }
   };
 

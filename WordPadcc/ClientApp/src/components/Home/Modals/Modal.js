@@ -41,7 +41,7 @@ export default function CustomModal({ heading, name }) {
     message: { errorMessage, isLoading },
     dispatchMessage,
   } = useContext(ModalContext);
-  const { setPassword } = useContext(AuthContext);
+  const { setPassword, authDispatch } = useContext(AuthContext);
 
   // local states
   const [path, setPath] = useState(window.location.pathname.removeCharAt(1));
@@ -72,8 +72,8 @@ export default function CustomModal({ heading, name }) {
         connection.on("password-setting", (message) => {
           count = count + 1;
           if (!window.location.pathname.includes("login")) {
-            console.log(count);
-            if (count === 3) {
+            if (count >= 3) {
+              authDispatch({ type: AUTH_LOADING_SUCCESS });
               navigate(window.location.pathname + "/login");
             }
           }
@@ -83,9 +83,8 @@ export default function CustomModal({ heading, name }) {
   }, [connection]);
 
   const notifyPasswordSetting = useCallback(() => {
-    console.log(connection);
     if (connection) {
-      connection.send("SendToOthers", "hello");
+      connection.send("SendToOthers", "set-password");
     }
   }, [connection]);
 
@@ -118,16 +117,21 @@ export default function CustomModal({ heading, name }) {
       try {
         dispatchMessage({ type: IS_LOADING });
         let id;
-        if (content.Id === "") {
+        if (content.Url === "") {
           id = window.location.pathname.removeCharAt(1);
         } else {
           id = content.Id;
         }
-        const response = await axios.patch(`/api/notes/${id}/update-url`, {
-          ...content,
-          Url: path,
-          Id: id,
-        });
+
+        const response = await axios.patch(
+          `/api/notes/${window.location.pathname.removeCharAt(1)}/update-url`,
+          {
+            ...content,
+            Url: path,
+            Id: id,
+          }
+        );
+
         // when some client set password for this notes but other client want to change url, then they must login first
         if (response.data.message === "not authenticate") {
           navigate(`${window.location.pathname}/login`);

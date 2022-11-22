@@ -16,6 +16,7 @@ export default (state, action) => {
     case AUTH_CHECK:
       return { ...state, isSetPassword: true };
     case RESET_PASSWORD:
+      console.log("RESET-PASSWORD");
       return { ...state, isSetPassword: false };
     case AUTH_LOADING_SUCCESS:
       return { ...state, isAuthenticated: false, isSetPassword: true };

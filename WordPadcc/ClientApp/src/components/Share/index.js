@@ -11,7 +11,6 @@ const Share = () => {
     axios
       .get(`/api/notes/${params.id}/share`)
       .then((res) => {
-        console.log(res);
         if (!res.data.status) {
           setContent(res.data.content);
         }

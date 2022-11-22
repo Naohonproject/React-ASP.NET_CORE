@@ -57,13 +57,8 @@ function App() {
           .get(`/api/notes${location.pathname}`)
           .then((res) => {
             if (res.data.status === false) {
-              if (
-                res.data.message === "not authenticate" /* ||
-                (isSetPassword === true && isAuthenticated === false) */
-              ) {
-                /*  if (!window.location.pathname.includes("/login")) { */
+              if (res.data.message === "not authenticate") {
                 navigate(location.pathname + "/" + "login");
-                /*      } */
                 authDispatch({ type: AUTH_CHECK });
               }
             } else {

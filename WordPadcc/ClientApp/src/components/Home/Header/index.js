@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect, useCallback } from "react";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -19,9 +19,42 @@ const Index = () => {
     dispatch,
   } = useContext(ModalContext);
 
-  const { authDispatch } = useContext(AuthContext);
+  const {
+    authDispatch,
+    auth: { isSetPassword },
+  } = useContext(AuthContext);
 
   const navigate = useNavigate();
+
+  const [connection, setConnection] = useState(null);
+
+  useEffect(() => {
+    // config the builder and then build a instance of connect
+    const connect = new HubConnectionBuilder()
+      .withUrl("/socket/notes/update")
+      .withAutomaticReconnect()
+      .build();
+    // set connect to connection state
+    setConnection(connect);
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      connection.start().then(() => {
+        connection.on("password-reset", (message) => {
+          if (message) {
+            authDispatch({ type: RESET_PASSWORD });
+          }
+        });
+      });
+    }
+  }, [connection]);
+
+  const notifyPasswordReset = useCallback(() => {
+    if (connection) {
+      connection.send("ResetPassword", "Reset");
+    }
+  }, [connection]);
 
   const handleOnClick = (e) => {
     e.preventDefault();
@@ -46,13 +79,10 @@ const Index = () => {
       dispatch({ type: RESET_PASSWORD });
       authDispatch({ type: RESET_PASSWORD });
     } else {
+      notifyPasswordReset();
       authDispatch({ type: RESET_PASSWORD });
     }
   };
-
-  const {
-    auth: { isSetPassword },
-  } = useContext(AuthContext);
 
   return (
     <Container fluid>
