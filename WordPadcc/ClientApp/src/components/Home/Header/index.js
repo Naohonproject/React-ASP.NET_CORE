@@ -5,6 +5,7 @@ import Col from "react-bootstrap/Col";
 import { AiFillLock } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 
 import "./style.css";
 import { ModalContext } from "../../../contexts/ModalContext";

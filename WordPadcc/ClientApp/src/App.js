@@ -23,7 +23,7 @@ function App() {
   } = useContext(ModalContext);
   const {
     authDispatch,
-    auth: { isAuthenticated },
+    auth: { isAuthenticated, isSetPassword },
   } = useContext(AuthContext);
 
   // when App mount, useEffect will be called, 2 cases will be available:
@@ -57,8 +57,13 @@ function App() {
           .get(`/api/notes${location.pathname}`)
           .then((res) => {
             if (res.data.status === false) {
-              if (res.data.message === "not authenticate") {
+              if (
+                res.data.message === "not authenticate" /* ||
+                (isSetPassword === true && isAuthenticated === false) */
+              ) {
+                /*  if (!window.location.pathname.includes("/login")) { */
                 navigate(location.pathname + "/" + "login");
+                /*      } */
                 authDispatch({ type: AUTH_CHECK });
               }
             } else {
@@ -73,7 +78,7 @@ function App() {
           .catch((err) => console.log(err));
       }
     }
-  }, [/* Id, Url,  */ window.location.pathname /* isAuthenticated */]);
+  }, [/* Id, Url,  */ window.location.pathname /* , isAuthenticated */]);
 
   return (
     <div className="App">

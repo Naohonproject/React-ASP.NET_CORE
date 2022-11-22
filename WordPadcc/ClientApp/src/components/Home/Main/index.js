@@ -27,7 +27,7 @@ const Main = () => {
   useEffect(() => {
     // config the builder and then build a instance of connect
     const connect = new HubConnectionBuilder()
-      .withUrl("/socket/notes/update-content")
+      .withUrl("/socket/notes/update")
       .withAutomaticReconnect()
       .build();
     // set connect to connection state
@@ -36,6 +36,7 @@ const Main = () => {
 
   // listen socket event
   // side effect when connection state is changed,start the Socket client and start listening the event
+  // list the socket event then dispatch the change to Content in Modal context, then update the local states
   useEffect(() => {
     if (connection) {
       connection.start().then(() => {

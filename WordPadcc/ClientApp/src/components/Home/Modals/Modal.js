@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { TfiSave } from "react-icons/tfi";
 import { AiFillEyeInvisible } from "react-icons/ai";
 import { AiFillEye } from "react-icons/ai";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 
 import { ModalContext } from "../../../contexts/ModalContext";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -17,6 +18,7 @@ import {
   UPDATE_FAIL,
   IS_LOADING,
   RESET,
+  AUTH_LOADING_SUCCESS,
 } from "../../../reducers/constant";
 import "./Modal.css";
 
@@ -26,7 +28,11 @@ String.prototype.removeCharAt = function (i) {
   return tmp.join("");
 };
 
+let count = 0;
+
 export default function CustomModal({ heading, name }) {
+  //
+  // contexts, global states
   const {
     modalShow,
     setModalShow,
@@ -37,14 +43,53 @@ export default function CustomModal({ heading, name }) {
   } = useContext(ModalContext);
   const { setPassword } = useContext(AuthContext);
 
+  // local states
   const [path, setPath] = useState(window.location.pathname.removeCharAt(1));
   const [password, setLocalPassword] = useState("");
   const [isVisitable, setIsVisitable] = useState(false);
+  const [connection, setConnection] = useState(null);
 
+  // side effects
   useEffect(() => {
     setPath(window.location.pathname.removeCharAt(1));
   }, [window.location.pathname]);
 
+  // init connection when Modal is mounted into DOM
+  useEffect(() => {
+    // config the builder and then build a instance of connect
+    const connect = new HubConnectionBuilder()
+      .withUrl("/socket/notes/update")
+      .withAutomaticReconnect()
+      .build();
+    // set connect to connection state
+    setConnection(connect);
+  }, []);
+
+  // listen socket event
+  useEffect(() => {
+    if (connection) {
+      connection.start().then(() => {
+        connection.on("password-setting", (message) => {
+          count = count + 1;
+          if (!window.location.pathname.includes("login")) {
+            console.log(count);
+            if (count === 3) {
+              navigate(window.location.pathname + "/login");
+            }
+          }
+        });
+      });
+    }
+  }, [connection]);
+
+  const notifyPasswordSetting = useCallback(() => {
+    console.log(connection);
+    if (connection) {
+      connection.send("SendToOthers", "hello");
+    }
+  }, [connection]);
+
+  // navigate hook
   const navigate = useNavigate();
 
   const handleClose = () => {
@@ -106,10 +151,12 @@ export default function CustomModal({ heading, name }) {
     } else {
       const isSuccess = await setPassword(content.Url, password);
       if (isSuccess) {
+        notifyPasswordSetting();
         setModalShow(null);
       }
     }
   };
+
   return (
     <>
       <Modal show={modalShow === name} onHide={handleClose}>

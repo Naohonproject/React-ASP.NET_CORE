@@ -82,7 +82,7 @@ namespace WordPadcc
                 // use MapControllers to map request context to Controllers and Actions
                 endpoints.MapControllers();
                 // map Socket request to handler
-                endpoints.MapHub<RealtimeHubs>("/socket/notes/update-content");
+                endpoints.MapHub<RealtimeHubs>("/socket/notes/update");
             });
 
             // If all Requests endPoint does not match the controller and actions , the SPA will be serve, the those Url will be render by client
