@@ -73,7 +73,7 @@ function App() {
           .catch((err) => console.log(err));
       }
     }
-  }, [window.location.pathname, isAuthenticated]);
+  }, [window.location.pathname /* isAuthenticated */]);
 
   return (
     <div className="App">
