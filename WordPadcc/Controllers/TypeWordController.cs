@@ -51,16 +51,10 @@ namespace WordPadcc.Controllers
                 data.Password = hashedUserPassword;
             }
 
-            _db.WordPads.Add(data);
-            try
-            {
-                await _db.SaveChangesAsync();
-                return Json(data);
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+            await _db.WordPads.AddAsync(data);
+
+            await _db.SaveChangesAsync();
+            return Json(data);
         }
 
         // Access Modifier : Private
@@ -86,15 +80,9 @@ namespace WordPadcc.Controllers
                     {
                         note.Content = data.Content;
                         note.IsModified = true;
-                        try
-                        {
-                            await _db.SaveChangesAsync();
-                            return Json(note);
-                        }
-                        catch (System.Exception)
-                        {
-                            return StatusCode(StatusCodes.Status500InternalServerError);
-                        }
+
+                        await _db.SaveChangesAsync();
+                        return Json(note);
                     }
                     else
                     {
@@ -105,15 +93,9 @@ namespace WordPadcc.Controllers
                 {
                     note.Content = data.Content;
                     note.IsModified = true;
-                    try
-                    {
-                        await _db.SaveChangesAsync();
-                        return Json(note);
-                    }
-                    catch (System.Exception)
-                    {
-                        return StatusCode(StatusCodes.Status500InternalServerError);
-                    }
+
+                    await _db.SaveChangesAsync();
+                    return Json(note);
                 }
             }
         }
@@ -257,15 +239,9 @@ namespace WordPadcc.Controllers
                             );
                         }
                         note.Url = data.Url;
-                        try
-                        {
-                            await _db.SaveChangesAsync();
-                            return Json(new { status = true, Id = note.Id, Url = note.Url });
-                        }
-                        catch (System.Exception)
-                        {
-                            return StatusCode(StatusCodes.Status500InternalServerError);
-                        }
+
+                        await _db.SaveChangesAsync();
+                        return Json(new { status = true, Id = note.Id, Url = note.Url });
                     }
                     else
                     {
@@ -299,15 +275,9 @@ namespace WordPadcc.Controllers
                         );
                     }
                     note.Url = data.Url;
-                    try
-                    {
-                        await _db.SaveChangesAsync();
-                        return Json(new { status = true, Id = note.Id, Url = note.Url });
-                    }
-                    catch (System.Exception)
-                    {
-                        return StatusCode(StatusCodes.Status500InternalServerError);
-                    }
+
+                    await _db.SaveChangesAsync();
+                    return Json(new { status = true, Id = note.Id, Url = note.Url });
                 }
             }
         }
@@ -347,25 +317,19 @@ namespace WordPadcc.Controllers
 
             // update password in DbContext
             note.Password = hashedUserPassword;
-            try
-            {
-                // Call SaveChangeAsync to save changes to database
-                await _db.SaveChangesAsync();
-                // return the database's note data without
-                return Json(
-                    new
-                    {
-                        Id = note.Id,
-                        Url = note.Url,
-                        Content = note.Content,
-                        IsModified = note.IsModified
-                    }
-                );
-            }
-            catch (System.Exception)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
+
+            // Call SaveChangeAsync to save changes to database
+            await _db.SaveChangesAsync();
+            // return the database's note data without
+            return Json(
+                new
+                {
+                    Id = note.Id,
+                    Url = note.Url,
+                    Content = note.Content,
+                    IsModified = note.IsModified
+                }
+            );
         }
 
         // Access Modifier : Public
@@ -419,15 +383,9 @@ namespace WordPadcc.Controllers
             {
                 note.Password = "";
                 HttpContext.Session.Remove($"{url}");
-                try
-                {
-                    await _db.SaveChangesAsync();
-                    return Json(new { status = true, message = "reset successfully" });
-                }
-                catch (System.Exception)
-                {
-                    return StatusCode(StatusCodes.Status500InternalServerError);
-                }
+
+                await _db.SaveChangesAsync();
+                return Json(new { status = true, message = "reset successfully" });
             }
         }
     }
