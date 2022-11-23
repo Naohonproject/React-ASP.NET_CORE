@@ -55,9 +55,11 @@ function AuthContextProvider({ children }) {
     } catch (error) {}
   };
 
-  const resolvePassword = async (url, password) => {
+  const resolvePassword = async (id, password) => {
     try {
-      const res = await axios.post(`/api/notes/${url}/auth-note`, { UserPassword: password });
+      const res = await axios.post(`/api/notes/${id}/auth-note?url=${id}`, {
+        UserPassword: password,
+      });
       if (res.data.isAuth) {
         authDispatch({ type: RESOLVE_PASSWORD_SUCCESS });
       } else {

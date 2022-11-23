@@ -54,7 +54,7 @@ function App() {
     else {
       if (!location.pathname.includes("login") && !location.pathname.includes("share")) {
         axios
-          .get(`/api/notes${location.pathname}`)
+          .get(`/api/notes${location.pathname}?id=${Id}`)
           .then((res) => {
             if (res.data.status === false) {
               if (res.data.message === "not authenticate") {
@@ -73,7 +73,7 @@ function App() {
           .catch((err) => console.log(err));
       }
     }
-  }, [/* Id, Url,  */ window.location.pathname /* , isAuthenticated */]);
+  }, [window.location.pathname, isAuthenticated]);
 
   return (
     <div className="App">

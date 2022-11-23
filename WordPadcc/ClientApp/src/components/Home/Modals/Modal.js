@@ -41,7 +41,11 @@ export default function CustomModal({ heading, name }) {
     message: { errorMessage, isLoading },
     dispatchMessage,
   } = useContext(ModalContext);
-  const { setPassword, authDispatch } = useContext(AuthContext);
+  const {
+    setPassword,
+    authDispatch,
+    auth: { isAuthenticated, isSetPassword },
+  } = useContext(AuthContext);
 
   // local states
   const [path, setPath] = useState(window.location.pathname.removeCharAt(1));

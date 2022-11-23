@@ -79,7 +79,10 @@ namespace WordPadcc.Controllers
             {
                 if (note.Password != "" && note.Password != null)
                 {
-                    if (HttpContext.Session.GetString($"{url}") == $"{url}")
+                    bool isAuthenticated =
+                        (HttpContext.Session.GetString($"{data.Id}") == $"{data.Id}")
+                        || (HttpContext.Session.GetString($"{url}") == $"{url}");
+                    if (isAuthenticated)
                     {
                         note.Content = data.Content;
                         note.IsModified = true;
@@ -140,7 +143,7 @@ namespace WordPadcc.Controllers
         //                              If false, response to client status:false and message:not authenticate
         //                          If i has no password , response to client that note data with hasPassword : false
         [HttpGet("{url}")]
-        public IActionResult GetNote(string url)
+        public IActionResult GetNote(string url, string id)
         {
             var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             if (note == null)
@@ -149,7 +152,10 @@ namespace WordPadcc.Controllers
             }
             else if (note.Password != "")
             {
-                if (HttpContext.Session.GetString($"{url}") == $"{url}")
+                bool isAuthenticated =
+                    (HttpContext.Session.GetString($"{id}") == $"{id}")
+                    || (HttpContext.Session.GetString($"{url}") == $"{url}");
+                if (isAuthenticated)
                 {
                     return Json(
                         new
@@ -219,7 +225,10 @@ namespace WordPadcc.Controllers
             {
                 if (note.Password != "" && note.Password != null)
                 {
-                    if (HttpContext.Session.GetString($"{url}") == $"{url}")
+                    bool isAuthenticated =
+                        (HttpContext.Session.GetString($"{data.Id}") == $"{data.Id}")
+                        || (HttpContext.Session.GetString($"{url}") == $"{url}");
+                    if (isAuthenticated)
                     {
                         if (data.Url == "")
                         {
@@ -303,7 +312,7 @@ namespace WordPadcc.Controllers
             }
         }
 
-        // Access Modifier : Private
+        // Access Modifier : Public
         // EndPoint : PATCH /api/notes/:url/update-password
         // Desc : To Update Password of the note in Database
         [HttpPatch("{url}/update-password")]
@@ -362,13 +371,13 @@ namespace WordPadcc.Controllers
         // Access Modifier : Public
         // EndPoint : POST api/notes/:url/auth-note
         // Desc : To Authenticate Password of the note in Database
-        [HttpPost("{url}/auth-note")]
-        public IActionResult Authenticate(string url, Password password)
+        [HttpPost("{id}/auth-note")]
+        public IActionResult Authenticate(string id, string url, Password password)
         {
-            var note = _db.WordPads.FirstOrDefault(n => n.Url == url);
+            var note = _db.WordPads.FirstOrDefault(n => n.Id == id);
             if (note == null)
             {
-                return Json(new { status = false, message = "not found" });
+                note = _db.WordPads.FirstOrDefault(n => n.Url == url);
             }
 
             try
@@ -377,7 +386,7 @@ namespace WordPadcc.Controllers
 
                 if (isValidPassword)
                 {
-                    HttpContext.Session.SetString($"{url}", $"{url}");
+                    HttpContext.Session.SetString($"{id}", $"{id}");
                     return Json(new { isAuth = true, message = "successfull" });
                 }
                 else

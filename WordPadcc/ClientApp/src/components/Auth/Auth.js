@@ -5,6 +5,7 @@ import Container from "react-bootstrap/Container";
 import { Navigate, useParams } from "react-router-dom";
 
 import { AuthContext } from "../../contexts/AuthContext";
+import { ModalContext } from "../../contexts/ModalContext";
 import { TYPING_PASSWORD } from "../../reducers/constant";
 
 const Auth = () => {
@@ -15,6 +16,10 @@ const Auth = () => {
     authDispatch,
   } = useContext(AuthContext);
 
+  const {
+    content: { Id },
+  } = useContext(ModalContext);
+
   const [password, setPassword] = useState("");
 
   const handleOnChange = (e) => {
@@ -24,8 +29,14 @@ const Auth = () => {
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
-    const url = window.location.pathname.split("/")[1];
-    await resolvePassword(url, password);
+    let id;
+    if (Id !== "") {
+      id = Id;
+    } else {
+      id = window.location.pathname.split("/")[1];
+    }
+
+    await resolvePassword(id, password);
   };
 
   return isAuthenticated || (isAuthenticated === null && !isSetPassword) ? (
