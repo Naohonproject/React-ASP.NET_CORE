@@ -1,19 +1,13 @@
 using API_IDENTITY.Auth;
-using API_IDENTITY.Models;
+using API_IDENTITY.Data;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace API_IDENTITY
 {
@@ -35,7 +29,13 @@ namespace API_IDENTITY
             // this line is to add the services(classes) we need for create the table of identity , this case is about MyIdentityUser(inherited from IdentityUser) and IdentityRole and
             // add the DbContext to store that table(this case uses ApplicationDbContext)
 
-            services.AddIdentity<MyIdentityUser,IdentityRole>(options=>options.SignIn.RequireConfirmedAccount=true).AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<MyIdentityUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,options=>
+            {
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = new System.TimeSpan(0,1,0);
+            });
 
             services.AddControllers();
         }
@@ -51,6 +51,8 @@ namespace API_IDENTITY
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
